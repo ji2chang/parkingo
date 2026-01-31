@@ -47,4 +47,4 @@ CREATE TABLE IF NOT EXISTS parking_space (
 )
 
 CREATE INDEX idx_parking_status
-ON parking_space (parking_id, status);
+ON parking_space (parking_lot_id, status);
