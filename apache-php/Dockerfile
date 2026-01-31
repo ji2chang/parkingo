@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.3-apache
 
 # Argomenti opzionali per il proxy
 ARG PROXY_HOST
