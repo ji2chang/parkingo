@@ -3,9 +3,7 @@ import React from 'react'
 export default function ParkingCard({ parking }) {
   return (
     <div className="bg-white shadow-lg rounded-lg p-6 border border-gray-200 hover:shadow-xl transition">
-      <h3 className="text-xl font-semibold text-gray-800 mb-2">
-        {parking.name}
-      </h3>
+      <h3 className="text-xl font-semibold text-gray-800 mb-2">{parking.name}</h3>
       <p className="text-gray-600 mb-4">
         <span className="font-medium">Spaces:</span> {parking.spaces}
       </p>

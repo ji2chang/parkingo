@@ -5,11 +5,10 @@ export default function Home() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">
-          Welcome to Parkingo
-        </h2>
+        <h2 className="text-3xl font-bold text-gray-800 mb-4">Welcome to Parkingo</h2>
         <p className="text-gray-600 mb-6 leading-relaxed">
-          This is the initial frontend skeleton. From here we'll add components, API calls and UI for parking management.
+          This is the initial frontend skeleton. From here we'll add components, API calls and UI
+          for parking management.
         </p>
         <div className="flex gap-4">
           <Link

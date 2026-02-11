@@ -41,10 +41,8 @@ export default function ParkingList() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">
-        Parking Locations
-      </h2>
-      
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Parking Locations</h2>
+
       {error && (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6">
           <p>{error}</p>
