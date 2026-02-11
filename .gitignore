@@ -1,1 +1,92 @@
+# OS artifacts
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE / Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.iml
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-lock.yaml
+package-lock.json
+
+# PHP / Composer
+/vendor/
 www/vendor/
+composer.phar
+.phpunit.result.cache
+phpunit.xml
+phpunit.xml.dist
+.php_cs.cache
+
+# Environment
+.env
+.env.*
+.env.local
+.env.backup
+
+# Docker
+.docker/
+.dockerignore
+docker-compose.override.yml
+docker-compose.*.local.yml
+
+# Logs and runtime files
+*/logs/
+logs/
+*.log
+*.out
+*.pid
+*.seed
+
+# Build, cache and generated files
+build/
+dist/
+vendor/
+coverage/
+.cache/
+storage/
+tmp/
+cache/
+
+# Database files
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+
+# Certificates
+*.pem
+*.key
+
+# Backup and export
+*.gz
+*.zip
+*.tar
+
+# Test and CI
+.phpunit.result.cache
+.tox/
+/.cache
+
+# Misc
+*.swp
+*~
+.idea/
+.vscode/
+.history/
+.sass-cache/
+.DS_Store
+Thumbs.db
+
+# Composer lock is typically committed for applications; adjust if you prefer to ignore
+# composer.lock
