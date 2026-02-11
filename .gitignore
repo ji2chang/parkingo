@@ -95,5 +95,3 @@ Thumbs.db
 frontend/node_modules/
 frontend/dist/
 
-# Build output when copying frontend into PHP public folder
-www/frontend/
