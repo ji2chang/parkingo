@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS reservation(
 CREATE TABLE IF NOT EXISTS parking_lot (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL
-)
+);
 
 CREATE TABLE IF NOT EXISTS parking_space (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -43,8 +43,8 @@ CREATE TABLE IF NOT EXISTS parking_space (
     code CHAR(4) NOT NULL,
     parking_lot_id INT NOT NULL,
     status ENUM('OCCUPIED', 'FREE', 'NOT AVAILABLE') NOT NULL,
-    CONSTRAINT fk_parking FOREIGN KEY (parking_id) REFERENCES parking_lot(id),
-)
+    CONSTRAINT fk_parking FOREIGN KEY (parking_lot_id) REFERENCES parking_lot(id),
+);
 
 CREATE INDEX idx_parking_status
 ON parking_space (parking_lot_id, status);
