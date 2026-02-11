@@ -90,3 +90,10 @@ Thumbs.db
 
 # Composer lock is typically committed for applications; adjust if you prefer to ignore
 # composer.lock
+
+# Frontend (Vite / React)
+frontend/node_modules/
+frontend/dist/
+
+# Build output when copying frontend into PHP public folder
+www/frontend/

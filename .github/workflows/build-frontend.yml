@@ -1,0 +1,64 @@
+name: Build Frontend (DEVFRONT)
+
+on:
+  push:
+    branches: [ 'DEVFRONT' ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build frontend and upload artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
+      # Optional: if you want to automatically copy the built files into `www/frontend`
+      # and push them back to the repo, you can add steps using a personal access token
+      # with repo write permissions. This example is intentionally commented out because
+      # it modifies the repository on CI which may not be desired.
+      #
+      # - name: Checkout for commit
+      #   uses: actions/checkout@v4
+      #   with:
+      #     persist-credentials: false
+      #
+      # - name: Copy dist into www/frontend
+      #   run: |
+      #     rm -rf www/frontend || true
+      #     mkdir -p www/frontend
+      #     cp -r frontend/dist/* www/frontend/
+      #
+      # - name: Commit and push build to DEVFRONT
+      #   env:
+      #     GIT_AUTHOR_NAME: github-actions
+      #     GIT_AUTHOR_EMAIL: actions@github.com
+     #   run: |
+      #     git config user.name "$GIT_AUTHOR_NAME"
+      #     git config user.email "$GIT_AUTHOR_EMAIL"
+      #     git add www/frontend
+      #     git commit -m "chore(frontend): add built frontend from CI [skip ci]" || echo "no changes to commit"
+      #     git push origin HEAD:DEVFRONT
