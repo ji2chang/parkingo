@@ -1,65 +1,80 @@
 import React from 'react'
-import { MapPin, Clock, Euro } from 'lucide-react'
+import { MapPin, Clock, Euro, Car, ArrowRight } from 'lucide-react'
 
 const ParkingInfoCard = ({ parking, onSelect }) => {
-  const getAvailabilityLevel = () => {
-    const percentage = (parking.availableSpots / parking.totalSpots) * 100
-    if (percentage > 50) return { text: 'Alta disponibilità', color: 'text-green-600' }
-    if (percentage > 20) return { text: 'Media disponibilità', color: 'text-orange-600' }
-    return { text: 'Bassa disponibilità', color: 'text-red-600' }
-  }
-
-  const availability = getAvailabilityLevel()
+  const pct = (parking.availableSpots / parking.totalSpots) * 100
+  const status =
+    pct > 50
+      ? { text: 'Alta disponibilità', color: 'text-emerald-600', bar: 'bg-emerald-500', badge: 'bg-emerald-100 text-emerald-700' }
+      : pct > 15
+        ? { text: 'Media disponibilità', color: 'text-orange-600', bar: 'bg-orange-500', badge: 'bg-orange-100 text-orange-700' }
+        : { text: 'Bassa disponibilità', color: 'text-red-600', bar: 'bg-red-500', badge: 'bg-red-100 text-red-700' }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-5 transition-all duration-300 hover:shadow-2xl">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-gray-900 text-lg leading-snug mb-1 truncate">
+            {parking.name}
+          </h3>
+          <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+            <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">{parking.address}</span>
+          </div>
+        </div>
+        <span className={`flex-shrink-0 px-2 py-1 rounded-full text-[10px] font-bold ${status.badge}`}>
+          {status.text}
+        </span>
+      </div>
+
+      {/* Progress bar */}
       <div className="mb-4">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{parking.name}</h3>
-        <div className="flex items-start gap-2 text-gray-600">
-          <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />
-          <p className="text-sm">{parking.address}</p>
+        <div className="flex items-center justify-between text-xs mb-1">
+          <span className="text-gray-500">
+            <Car className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
+            {parking.availableSpots} / {parking.totalSpots}
+          </span>
+          <span className={`font-bold ${status.color}`}>{Math.round(pct)}%</span>
+        </div>
+        <div className="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden">
+          <div
+            className={`h-full rounded-full ${status.bar} transition-all duration-500`}
+            style={{ width: `${pct}%` }}
+          />
         </div>
       </div>
 
-      <div className="space-y-3 mb-5">
-        <div className="flex items-center gap-3">
-          <Euro className="w-5 h-5 text-blue-600" />
-          <div>
-            <p className="text-sm text-gray-500">Tariffa oraria</p>
-            <p className="text-lg font-bold text-gray-900">€{parking.pricePerHour}/h</p>
-          </div>
+      {/* Info row */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-1.5 text-sm">
+          <Euro className="w-4 h-4 text-teal-600" />
+          <span className="font-bold text-gray-900">€{parking.pricePerHour}</span>
+          <span className="text-gray-400">/h</span>
         </div>
-
-        <div className="flex items-center gap-3">
-          <Clock className="w-5 h-5 text-blue-600" />
-          <div>
-            <p className="text-sm text-gray-500">Disponibilità</p>
-            <p className={`text-sm font-semibold ${availability.color}`}>
-              {availability.text}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-5">
-        <p className="text-sm text-gray-600 mb-2">Zone disponibili:</p>
-        <div className="flex flex-wrap gap-2">
-          {parking.zones.map((zone) => (
+        <div className="flex flex-wrap gap-1">
+          {parking.zones.slice(0, 3).map((zone) => (
             <span
               key={zone.id}
-              className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700"
+              className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-gray-100 text-gray-600"
             >
               {zone.name}
             </span>
           ))}
+          {parking.zones.length > 3 && (
+            <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-gray-100 text-gray-600">
+              +{parking.zones.length - 3}
+            </span>
+          )}
         </div>
       </div>
 
+      {/* CTA */}
       <button
         onClick={() => onSelect(parking)}
-        className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-300 hover:shadow-lg"
+        className="w-full py-2.5 bg-[#0f1b3d] hover:bg-[#162550] text-white font-semibold text-sm rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
       >
-        Visualizza Parcheggio
+        Visualizza Zone <ArrowRight className="w-4 h-4" />
       </button>
     </div>
   )

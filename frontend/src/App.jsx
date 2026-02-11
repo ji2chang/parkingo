@@ -8,6 +8,8 @@ import CityMap from './pages/CityMap'
 import ParkingZoneMap from './pages/ParkingZoneMap'
 import Booking from './pages/Booking'
 import ParkingList from './pages/ParkingList'
+import About from './pages/About'
+import Contact from './pages/Contact'
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
                 <Route path="/parking/:id" element={<ParkingZoneMap />} />
                 <Route path="/booking" element={<Booking />} />
                 <Route path="/parkings" element={<ParkingList />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
               </Routes>
             </main>
             <Footer />
