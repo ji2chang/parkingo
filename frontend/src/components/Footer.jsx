@@ -151,12 +151,17 @@ export default function Footer() {
               </ul>
 
               <div className="mt-6 flex items-center gap-4">
-                {[Instagram, Linkedin, Twitter].map((Icon) => (
+                {[
+                  { Icon: Instagram, label: 'Instagram' },
+                  { Icon: Linkedin, label: 'LinkedIn' },
+                  { Icon: Twitter, label: 'Twitter' },
+                ].map((social, idx) => (
                   <button
-                    key={Icon.displayName || Icon.name}
+                    key={idx}
                     className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/70 transition hover:text-teal-200"
+                    aria-label={social.label}
                   >
-                    <Icon className="h-4 w-4" />
+                    <social.Icon className="h-4 w-4" />
                   </button>
                 ))}
               </div>
