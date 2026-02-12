@@ -62,7 +62,11 @@ export default function Header() {
               </span>
             </Link>
 
-            <nav className="hidden md:flex items-center gap-2" role="navigation" aria-label="Main navigation">
+            <nav
+              className="hidden md:flex items-center gap-2"
+              role="navigation"
+              aria-label="Main navigation"
+            >
               {navLinks.map((link) => (
                 <Link
                   key={link.to}
@@ -110,7 +114,10 @@ export default function Header() {
                 </button>
 
                 {profileOpen && (
-                  <div className="absolute right-0 mt-2 w-52 bg-white/98 backdrop-blur-lg border-2 border-slate-200 rounded-2xl shadow-xl text-sm py-2" role="menu">
+                  <div
+                    className="absolute right-0 mt-2 w-52 bg-white/98 backdrop-blur-lg border-2 border-slate-200 rounded-2xl shadow-xl text-sm py-2"
+                    role="menu"
+                  >
                     <Link
                       to="/parkings"
                       className="block px-5 py-3 text-slate-700 hover:bg-slate-50 font-medium transition-colors"

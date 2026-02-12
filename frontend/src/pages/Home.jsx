@@ -180,7 +180,8 @@ export default function Home() {
               </span>
             </h1>
             <p className="text-lg sm:text-xl text-slate-300/90 max-w-2xl leading-relaxed mx-auto lg:mx-0">
-              Occupazione live, percorsi ottimizzati e check-in digitale per entrare senza code. Un assistente personale per ogni spostamento in città.
+              Occupazione live, percorsi ottimizzati e check-in digitale per entrare senza code. Un
+              assistente personale per ogni spostamento in città.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
               <button
@@ -348,10 +349,15 @@ export default function Home() {
         <section className="relative py-6 px-2">
           <div className="max-w-6xl xl:max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-center justify-items-center rounded-3xl border-2 border-white/15 bg-white/10 backdrop-blur-2xl p-10 lg:p-12 shadow-[0_40px_140px_-70px_rgba(14,165,233,0.8)]">
             <div className="space-y-5">
-              <p className="text-sm uppercase tracking-[0.25em] text-teal-300 font-semibold">Mappa predittiva</p>
-              <h2 className="text-4xl lg:text-5xl font-black leading-tight">Suggerimenti basati su traffico reale</h2>
+              <p className="text-sm uppercase tracking-[0.25em] text-teal-300 font-semibold">
+                Mappa predittiva
+              </p>
+              <h2 className="text-4xl lg:text-5xl font-black leading-tight">
+                Suggerimenti basati su traffico reale
+              </h2>
               <p className="text-slate-300/90 text-base leading-relaxed">
-                Il motore di raccomandazione combina occupazione in tempo reale, eventi cittadini e preferenze salvate. Ti proponiamo il posto migliore prima che tu arrivi.
+                Il motore di raccomandazione combina occupazione in tempo reale, eventi cittadini e
+                preferenze salvate. Ti proponiamo il posto migliore prima che tu arrivi.
               </p>
               <div className="flex gap-4 text-sm text-slate-200 flex-wrap">
                 <span className="px-4 py-2.5 rounded-xl bg-white/10 border border-white/15 font-semibold backdrop-blur">
@@ -391,8 +397,12 @@ export default function Home() {
                 stepsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
             >
-              <p className="text-sm uppercase tracking-[0.25em] text-teal-300 font-semibold">Flusso in 3 mosse</p>
-              <h2 className="text-4xl lg:text-5xl font-black mt-2">Dal tap al parcheggio in meno di 2 minuti</h2>
+              <p className="text-sm uppercase tracking-[0.25em] text-teal-300 font-semibold">
+                Flusso in 3 mosse
+              </p>
+              <h2 className="text-4xl lg:text-5xl font-black mt-2">
+                Dal tap al parcheggio in meno di 2 minuti
+              </h2>
             </div>
 
             <div className="grid md:grid-cols-3 gap-7 md:gap-8 justify-items-center">
@@ -429,7 +439,9 @@ export default function Home() {
               <p className="text-sm uppercase tracking-[0.25em] text-teal-300 font-semibold">
                 La voce degli utenti
               </p>
-              <h2 className="text-4xl lg:text-5xl font-black mt-2">Esperienze reali, zero stress</h2>
+              <h2 className="text-4xl lg:text-5xl font-black mt-2">
+                Esperienze reali, zero stress
+              </h2>
             </div>
 
             <div className="grid md:grid-cols-2 gap-7 lg:gap-8 justify-items-center">
@@ -479,7 +491,8 @@ export default function Home() {
                   Blocca il tuo posto in anticipo e risparmia tempo ogni giorno.
                 </h2>
                 <p className="text-base text-slate-900/90 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-medium">
-                  Attiva gli alert di disponibilità, salva i preferiti e ricevi percorsi ottimizzati prima di partire.
+                  Attiva gli alert di disponibilità, salva i preferiti e ricevi percorsi ottimizzati
+                  prima di partire.
                 </p>
               </div>
               <div className="flex flex-col gap-4 lg:items-end">

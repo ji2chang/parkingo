@@ -163,7 +163,9 @@ const Booking = () => {
           </button>
           <div>
             <h1 className="text-2xl font-black text-slate-900">Prenota la tua zona</h1>
-            <p className="text-sm text-slate-600 font-medium mt-0.5">Completa i dettagli per confermare</p>
+            <p className="text-sm text-slate-600 font-medium mt-0.5">
+              Completa i dettagli per confermare
+            </p>
           </div>
         </div>
       </div>
