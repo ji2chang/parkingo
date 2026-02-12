@@ -152,17 +152,18 @@ const Booking = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-[72px] z-20">
-        <div className="w-full px-4 sm:px-6 lg:px-10 py-4 flex items-center gap-4">
+      <div className="bg-white/95 backdrop-blur-xl border-b-2 border-slate-200/80 sticky top-[72px] z-20 shadow-lg shadow-slate-200/50">
+        <div className="w-full px-4 sm:px-6 lg:px-10 py-5 flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition"
+            className="p-2.5 hover:bg-slate-100 rounded-xl transition-all duration-200 group"
+            aria-label="Torna indietro"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-5 h-5 text-slate-600 group-hover:text-slate-900" />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Prenota la tua zona</h1>
-            <p className="text-sm text-gray-500">Completa i dettagli per confermare</p>
+            <h1 className="text-2xl font-black text-slate-900">Prenota la tua zona</h1>
+            <p className="text-sm text-slate-600 font-medium mt-0.5">Completa i dettagli per confermare</p>
           </div>
         </div>
       </div>
@@ -271,11 +272,12 @@ const Booking = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 bg-teal-500 hover:bg-teal-400 disabled:bg-teal-500/50 text-gray-900 font-bold rounded-xl
-                    transition-all duration-200 shadow-lg shadow-teal-500/20 flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 disabled:from-teal-500/50 disabled:to-teal-600/50 text-white font-black text-base rounded-xl
+                    transition-all duration-200 shadow-xl shadow-teal-500/30 flex items-center justify-center gap-2 hover:shadow-2xl hover:shadow-teal-500/40"
+                  aria-label="Conferma prenotazione"
                 >
                   {loading ? (
-                    <div className="w-5 h-5 border-2 border-gray-900/30 border-t-gray-900 rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     'Conferma Prenotazione'
                   )}
