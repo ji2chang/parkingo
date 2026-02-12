@@ -10,7 +10,7 @@ const values = [
   {
     icon: Zap,
     title: 'Innovazione',
-    desc: 'Tecnologie all\'avanguardia per un\'esperienza di parcheggio smart e intuitiva.',
+    desc: "Tecnologie all'avanguardia per un'esperienza di parcheggio smart e intuitiva.",
   },
   {
     icon: Users,
@@ -30,11 +30,10 @@ const About = () => {
       {/* Hero */}
       <section className="bg-[#0f1b3d] py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
-            Chi siamo
-          </h1>
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">Chi siamo</h1>
           <p className="text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
-            Smart Parking nasce con l'obiettivo di trasformare l'esperienza di parcheggio urbano, rendendola semplice, veloce e sostenibile.
+            Smart Parking nasce con l'obiettivo di trasformare l'esperienza di parcheggio urbano,
+            rendendola semplice, veloce e sostenibile.
           </p>
         </div>
       </section>
@@ -46,10 +45,14 @@ const About = () => {
             <div>
               <h2 className="text-2xl font-extrabold text-gray-900 mb-4">La nostra missione</h2>
               <p className="text-gray-600 leading-relaxed mb-4">
-                Crediamo che trovare un parcheggio non debba essere una fonte di stress. La nostra piattaforma connette gli automobilisti con i parcheggi disponibili in tempo reale, riducendo traffico, emissioni e tempo sprecato.
+                Crediamo che trovare un parcheggio non debba essere una fonte di stress. La nostra
+                piattaforma connette gli automobilisti con i parcheggi disponibili in tempo reale,
+                riducendo traffico, emissioni e tempo sprecato.
               </p>
               <p className="text-gray-600 leading-relaxed">
-                Dalla ricerca alla prenotazione, ogni passaggio è progettato per essere intuitivo e veloce. Con zone dedicate — Standard, Elettriche e Premium — offriamo la soluzione giusta per ogni esigenza.
+                Dalla ricerca alla prenotazione, ogni passaggio è progettato per essere intuitivo e
+                veloce. Con zone dedicate — Standard, Elettriche e Premium — offriamo la soluzione
+                giusta per ogni esigenza.
               </p>
             </div>
             <div className="bg-gray-50 rounded-2xl p-8 text-center">
@@ -79,7 +82,9 @@ const About = () => {
       {/* Values */}
       <section className="bg-gray-50 py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-extrabold text-gray-900 text-center mb-12">I nostri valori</h2>
+          <h2 className="text-2xl font-extrabold text-gray-900 text-center mb-12">
+            I nostri valori
+          </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {values.map((v) => (
               <div

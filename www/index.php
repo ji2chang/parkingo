@@ -35,5 +35,17 @@ $app->put('/AggiornaPrenotazione', function (Request $request,
     return $response;
 });
 
+// Rotta per servire l'applicazione React
+$app->get('/[/{path:.*}]', function (Request $request, Response $response, array $args) {
+    $file = __DIR__ . '/index.html';
+    if (file_exists($file)) {
+        $response->getBody()->write(file_get_contents($file));
+        return $response;
+    }
+    return $response->withStatus(404, 'File non trovato');
+});
+
+$app->run();
+
 
 

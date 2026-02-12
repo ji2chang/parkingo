@@ -80,9 +80,7 @@ const Login = () => {
                     ${errors.email ? 'border-red-400 focus:ring-red-400/50' : 'border-white/15 focus:ring-teal-400/50'}`}
                 />
               </div>
-              {errors.email && (
-                <p className="text-red-300 text-xs mt-1.5">{errors.email}</p>
-              )}
+              {errors.email && <p className="text-red-300 text-xs mt-1.5">{errors.email}</p>}
             </div>
 
             {/* Password */}
@@ -112,18 +110,22 @@ const Login = () => {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {errors.password && (
-                <p className="text-red-300 text-xs mt-1.5">{errors.password}</p>
-              )}
+              {errors.password && <p className="text-red-300 text-xs mt-1.5">{errors.password}</p>}
             </div>
 
             {/* Remember + Forgot */}
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2 text-white/60 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 rounded bg-white/10 border-white/20 text-teal-500 focus:ring-teal-500/50" />
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded bg-white/10 border-white/20 text-teal-500 focus:ring-teal-500/50"
+                />
                 Ricordami
               </label>
-              <button type="button" className="text-teal-300 hover:text-teal-200 transition text-sm">
+              <button
+                type="button"
+                className="text-teal-300 hover:text-teal-200 transition text-sm"
+              >
                 Password dimenticata?
               </button>
             </div>

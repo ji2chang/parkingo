@@ -178,7 +178,10 @@ const CityMap = () => {
                 className="flex-1 text-sm text-gray-800 placeholder-gray-400 focus:outline-none"
               />
               {search && (
-                <button onClick={() => setSearch('')} className="text-gray-400 hover:text-gray-600 transition">
+                <button
+                  onClick={() => setSearch('')}
+                  className="text-gray-400 hover:text-gray-600 transition"
+                >
                   <X className="w-4 h-4" />
                 </button>
               )}

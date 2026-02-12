@@ -94,7 +94,7 @@ const Booking = () => {
     if (!formData.entryTime) errs.entryTime = 'Seleziona orario'
     if (!formData.exitTime) errs.exitTime = 'Seleziona orario'
     if (formData.entryTime && formData.exitTime && formData.entryTime >= formData.exitTime)
-      errs.exitTime = 'Deve essere dopo l\'orario di entrata'
+      errs.exitTime = "Deve essere dopo l'orario di entrata"
     if (!formData.licensePlate.trim()) errs.licensePlate = 'Inserisci la targa'
     else if (!/^[A-Z]{2}\d{3}[A-Z]{2}$/i.test(formData.licensePlate.trim()))
       errs.licensePlate = 'Formato: AA123BB'
@@ -153,7 +153,7 @@ const Booking = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-[72px] z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4">
+        <div className="w-full px-4 sm:px-6 lg:px-10 py-4 flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
             className="p-2 hover:bg-gray-100 rounded-lg transition"
@@ -168,7 +168,7 @@ const Booking = () => {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full px-4 sm:px-6 lg:px-10 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* ── FORM ── */}
           <div className="lg:col-span-2">

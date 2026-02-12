@@ -1,5 +1,33 @@
 @import 'tailwindcss';
 
+:root {
+  /* Color Palette - Modern Clean Design */
+  --primary: #00BFA5; /* Teal vibrante */
+  --surface: #F8FAFC; /* Grigio ultra-chiaro */
+  --text-primary: #1E293B; /* Blu scuro ardesia */
+  --text-secondary: #64748B; /* Grigio slate */
+  --border: #E2E8F0; /* Bordo sottile */
+  
+  /* Typography */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  
+  /* Shadows & Effects */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+  
+  /* Border Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+}
+
 *,
 *::before,
 *::after {
@@ -15,6 +43,7 @@ html {
 body {
   font-family:
     'Inter',
+    'Plus Jakarta Sans',
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
@@ -23,6 +52,78 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #ffffff;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.6;
+}
+
+.aurora-background {
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+main {
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+svg {
+  display: block;
+}
+
+/* Typography enhancements */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(2.25rem, 4vw, 3.75rem);
+}
+
+h2 {
+  font-size: clamp(1.875rem, 3vw, 3rem);
+}
+
+h3 {
+  font-size: clamp(1.5rem, 2vw, 1.875rem);
+}
+
+p {
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* Global button styling */
+button {
+  font-family: inherit;
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-bold);
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+/* Glass morphism effect */
+.glass-panel {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.soft-gradient {
+  background-image: var(--gradient-soft);
 }
 
 /* Custom scrollbar */

@@ -9,22 +9,44 @@ const mockZones = {
       { id: 'A', name: 'Zona A', available: 25, total: 30, pricePerHour: 5, isSpecial: false },
       { id: 'B', name: 'Zona B', available: 18, total: 30, pricePerHour: 5, isSpecial: false },
       { id: 'C', name: 'Zona C', available: 22, total: 30, pricePerHour: 5, isSpecial: false },
-      { id: 'EL', name: 'Zona Elettrica', available: 5, total: 15, pricePerHour: 7, isSpecial: true, specialType: 'Elettrica' },
+      {
+        id: 'EL',
+        name: 'Zona Elettrica',
+        available: 5,
+        total: 15,
+        pricePerHour: 7,
+        isSpecial: true,
+        specialType: 'Elettrica',
+      },
     ],
     2: [
       { id: 'D', name: 'Zona D', available: 12, total: 20, pricePerHour: 4, isSpecial: false },
-      { id: 'PR', name: 'Zona Premium', available: 3, total: 15, pricePerHour: 10, isSpecial: true, specialType: 'Premium' },
+      {
+        id: 'PR',
+        name: 'Zona Premium',
+        available: 3,
+        total: 15,
+        pricePerHour: 10,
+        isSpecial: true,
+        specialType: 'Premium',
+      },
     ],
   },
   2: {
     1: [
       { id: 'A', name: 'Zona A', available: 8, total: 20, pricePerHour: 4, isSpecial: false },
       { id: 'B', name: 'Zona B', available: 4, total: 20, pricePerHour: 4, isSpecial: false },
-      { id: 'PR', name: 'Zona Premium', available: 0, total: 10, pricePerHour: 8, isSpecial: true, specialType: 'Premium' },
+      {
+        id: 'PR',
+        name: 'Zona Premium',
+        available: 0,
+        total: 10,
+        pricePerHour: 8,
+        isSpecial: true,
+        specialType: 'Premium',
+      },
     ],
-    2: [
-      { id: 'C', name: 'Zona C', available: 15, total: 25, pricePerHour: 3.5, isSpecial: false },
-    ],
+    2: [{ id: 'C', name: 'Zona C', available: 15, total: 25, pricePerHour: 3.5, isSpecial: false }],
   },
   3: {
     1: [
@@ -37,11 +59,27 @@ const mockZones = {
     1: [
       { id: 'A', name: 'Zona A', available: 2, total: 40, pricePerHour: 6, isSpecial: false },
       { id: 'B', name: 'Zona B', available: 2, total: 40, pricePerHour: 6, isSpecial: false },
-      { id: 'EL', name: 'Zona Elettrica', available: 0, total: 15, pricePerHour: 8, isSpecial: true, specialType: 'Elettrica' },
+      {
+        id: 'EL',
+        name: 'Zona Elettrica',
+        available: 0,
+        total: 15,
+        pricePerHour: 8,
+        isSpecial: true,
+        specialType: 'Elettrica',
+      },
     ],
     2: [
       { id: 'C', name: 'Zona C', available: 1, total: 40, pricePerHour: 6, isSpecial: false },
-      { id: 'PR', name: 'Zona Premium', available: 0, total: 15, pricePerHour: 12, isSpecial: true, specialType: 'Premium' },
+      {
+        id: 'PR',
+        name: 'Zona Premium',
+        available: 0,
+        total: 15,
+        pricePerHour: 12,
+        isSpecial: true,
+        specialType: 'Premium',
+      },
     ],
   },
 }
@@ -50,10 +88,27 @@ const mockZones = {
 const pct = (a, t) => Math.round((a / t) * 100)
 
 const statusColor = (available, total) => {
-  if (available === 0) return { bar: 'bg-red-500', text: 'text-red-600', label: 'Pieno', badge: 'bg-red-100 text-red-700' }
+  if (available === 0)
+    return {
+      bar: 'bg-red-500',
+      text: 'text-red-600',
+      label: 'Pieno',
+      badge: 'bg-red-100 text-red-700',
+    }
   const p = pct(available, total)
-  if (p < 20) return { bar: 'bg-orange-500', text: 'text-orange-600', label: 'Quasi pieno', badge: 'bg-orange-100 text-orange-700' }
-  return { bar: 'bg-emerald-500', text: 'text-emerald-600', label: 'Disponibile', badge: 'bg-emerald-100 text-emerald-700' }
+  if (p < 20)
+    return {
+      bar: 'bg-orange-500',
+      text: 'text-orange-600',
+      label: 'Quasi pieno',
+      badge: 'bg-orange-100 text-orange-700',
+    }
+  return {
+    bar: 'bg-emerald-500',
+    text: 'text-emerald-600',
+    label: 'Disponibile',
+    badge: 'bg-emerald-100 text-emerald-700',
+  }
 }
 
 const specialIcon = (type) => {
@@ -111,9 +166,7 @@ const ParkingZoneMap = () => {
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  {parking?.name || 'Parcheggio'}
-                </h1>
+                <h1 className="text-xl font-bold text-gray-900">{parking?.name || 'Parcheggio'}</h1>
                 <p className="text-sm text-gray-500">
                   {totalAvail}/{totalAll} posti disponibili — Piano {level}
                 </p>
@@ -178,9 +231,7 @@ const ParkingZoneMap = () => {
                         </span>
                       )}
                     </div>
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-xs font-bold ${st.badge}`}
-                    >
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${st.badge}`}>
                       {st.label}
                     </span>
                   </div>

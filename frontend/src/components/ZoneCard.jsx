@@ -44,7 +44,9 @@ const ZoneCard = ({ zone, onSelect, isSelected }) => {
       {/* Availability */}
       <div className="mb-3">
         <div className="flex items-center gap-2 mb-2">
-          <span className={`text-sm font-semibold ${getAvailabilityColor().replace('bg-', 'text-')}`}>
+          <span
+            className={`text-sm font-semibold ${getAvailabilityColor().replace('bg-', 'text-')}`}
+          >
             {getAvailabilityText()}
           </span>
         </div>

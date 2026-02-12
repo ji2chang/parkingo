@@ -5,10 +5,25 @@ const ParkingInfoCard = ({ parking, onSelect }) => {
   const pct = (parking.availableSpots / parking.totalSpots) * 100
   const status =
     pct > 50
-      ? { text: 'Alta disponibilità', color: 'text-emerald-600', bar: 'bg-emerald-500', badge: 'bg-emerald-100 text-emerald-700' }
+      ? {
+          text: 'Alta disponibilità',
+          color: 'text-emerald-600',
+          bar: 'bg-emerald-500',
+          badge: 'bg-emerald-100 text-emerald-700',
+        }
       : pct > 15
-        ? { text: 'Media disponibilità', color: 'text-orange-600', bar: 'bg-orange-500', badge: 'bg-orange-100 text-orange-700' }
-        : { text: 'Bassa disponibilità', color: 'text-red-600', bar: 'bg-red-500', badge: 'bg-red-100 text-red-700' }
+        ? {
+            text: 'Media disponibilità',
+            color: 'text-orange-600',
+            bar: 'bg-orange-500',
+            badge: 'bg-orange-100 text-orange-700',
+          }
+        : {
+            text: 'Bassa disponibilità',
+            color: 'text-red-600',
+            bar: 'bg-red-500',
+            badge: 'bg-red-100 text-red-700',
+          }
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-5 transition-all duration-300 hover:shadow-2xl">
@@ -23,7 +38,9 @@ const ParkingInfoCard = ({ parking, onSelect }) => {
             <span className="truncate">{parking.address}</span>
           </div>
         </div>
-        <span className={`flex-shrink-0 px-2 py-1 rounded-full text-[10px] font-bold ${status.badge}`}>
+        <span
+          className={`flex-shrink-0 px-2 py-1 rounded-full text-[10px] font-bold ${status.badge}`}
+        >
           {status.text}
         </span>
       </div>
