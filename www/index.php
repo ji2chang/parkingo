@@ -30,7 +30,7 @@ $app->post('/InserisciPrenotazione', function (Request $request,
     foreach($field in $required){
         if(empty($data[$field])){
             $response->getBody()->write(json_endcode([
-                "success": false
+                "success": false,
                 "message": "Campo $field mancante" 
             ]));
             return $response->withStatus(400);}}
@@ -42,10 +42,16 @@ $app->post('/InserisciPrenotazione', function (Request $request,
     $data_inizio   = $data['data_inizio'];
     $data_fine     = $data['data_fine'];    
     if(strtotime($data_inizio)>strtotime($data_fine)){
-        $response
-    }       
-
-
+        $response->getBody()->write(json_decode[
+            "Success": false,
+            "message": "La data di inizio deve minore della data di fine"
+        ])}
+    $stmt = $pdo->prepare("SELECT * FROM parcheggi WHERE id = ?");
+        $stmt->execute([$parcheggio_id]);
+        $parcheggio = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$parcheggio) {
+            throw new Exception("Parcheggio non trovato");
+        }
     return $response;
 });
 
