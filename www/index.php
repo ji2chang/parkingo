@@ -25,6 +25,27 @@ $app->delete('/RimuoviPrenotazione', function (Request $request,
 $app->post('/InserisciPrenotazione', function (Request $request,
                          Response $response,
                          array $args): Response {
+    $data =$request->getParseBody();
+    $required = ['nome','cognome','targa','telefono','data_inizio','data_fine'];
+    foreach($field in $required){
+        if(empty($data[$field])){
+            $response->getBody()->write(json_endcode([
+                "success": false
+                "message": "Campo $field mancante" 
+            ]));
+            return $response->withStatus(400);}}
+    $nome          = trim($data['nome']);
+    $cognome       = trim($data['cognome']);
+    $targa         = strtoupper(trim($data['targa']));
+    $email         = $data['email'] ?? null;
+    $telefono      = $data['telefono'] ?? null;
+    $data_inizio   = $data['data_inizio'];
+    $data_fine     = $data['data_fine'];    
+    if(strtotime($data_inizio)>strtotime($data_fine)){
+        $response
+    }       
+
+
     return $response;
 });
 
