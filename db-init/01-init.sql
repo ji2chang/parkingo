@@ -91,24 +91,21 @@ CREATE TABLE chiusure_parcheggi (
     INDEX idx_parcheggio_periodo (parcheggio_id, data_inizio, data_fine)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================
--- DATI DI ESEMPIO
--- ============================================
+<<<<<<< HEAD
+CREATE TABLE IF NOT EXISTS parking_lot (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
 
--- Inserimento parcheggi di esempio
-INSERT INTO parcheggi (nome, indirizzo, citta, cap, posti_totali, tariffa_oraria, orario_apertura, orario_chiusura, aperto_24h, descrizione) VALUES
-('Parcheggio Centro', 'Via Roma 15', 'Milano', '20121', 150, 2.50, '06:00:00', '22:00:00', FALSE, 'Parcheggio coperto nel centro storico'),
-('Parking Stazione', 'Piazza Stazione 1', 'Milano', '20124', 300, 2.00, '00:00:00', '23:59:59', TRUE, 'Parcheggio scoperto adiacente alla stazione centrale'),
-('Garage Duomo', 'Via Torino 45', 'Milano', '20123', 80, 3.00, '07:00:00', '20:00:00', FALSE, 'Garage multipiano vicino al Duomo'),
-('Park & Ride Nord', 'Via Melchiorre Gioia 200', 'Milano', '20125', 500, 1.50, '00:00:00', '23:59:59', TRUE, 'Grande parcheggio di interscambio con metro');
-
--- Inserimento prenotazioni di esempio (con codici in stile nanoid)
-INSERT INTO prenotazioni (codice_prenotazione, parcheggio_id, nome, cognome, targa, email, data_inizio, data_fine, stato, importo_totale) VALUES
-('V1StGXR8_Z5jdHi6B-myT', 1, 'Mario', 'Rossi', 'AB123CD', 'mario.rossi@email.it', '2026-02-10 09:00:00', '2026-02-10 18:00:00', 'attiva', 22.50),
-('3z4F5m6n7p8q9r0s1t2u3', 2, 'Laura', 'Bianchi', 'EF456GH', 'laura.bianchi@email.it', '2026-02-11 14:00:00', '2026-02-11 20:00:00', 'attiva', 12.00),
-('K2nP9qR4sT7vW1xY5zA8b', 1, 'Giuseppe', 'Verdi', 'IJ789KL', NULL, '2026-02-09 08:00:00', '2026-02-09 12:00:00', 'completata', 10.00),
-('M8nB7vC6xZ5aS4dF3gH2j', 3, 'Anna', 'Neri', 'MN012OP', 'anna.neri@email.it', '2026-02-08 10:00:00', '2026-02-08 14:00:00', 'annullata', 12.00);
-
+CREATE TABLE IF NOT EXISTS parking_space (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    floor INT NOT NULL,
+    code CHAR(4) NOT NULL,
+    parking_lot_id INT NOT NULL,
+    status ENUM('OCCUPIED', 'FREE', 'NOT AVAILABLE') NOT NULL,
+    CONSTRAINT fk_parking FOREIGN KEY (parking_lot_id) REFERENCES parking_lot(id)
+);
+=======
 -- ============================================
 -- STORED PROCEDURE UTILI
 -- ============================================
@@ -248,9 +245,9 @@ JOIN parcheggi p ON pr.parcheggio_id = p.id
 WHERE pr.stato = 'attiva';
 
 -- ============================================
--- GRANT PERMISSIONS per lamp_user
+-- GRANT PERMISSIONS per parking_user
 -- ============================================
-GRANT ALL PRIVILEGES ON parcheggi_db.* TO 'lamp_user'@'%';
+GRANT ALL PRIVILEGES ON parcheggi_db.* TO 'parking_user'@'%';
 FLUSH PRIVILEGES;
 
 -- Messaggio finale
