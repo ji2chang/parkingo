@@ -1,11 +1,9 @@
 <?php
 
-const DB_HOST = 'DATABASE'; //può essere un nome DNS o un indirizzo IP
-
+// Parametri di connessione al database
+const DB_HOST = 'DATABASE'; // Nome host o IP (es. nome del container Docker)
 const DB_NAME = 'parking_db';
-
 const DB_USER = 'parking_user';
-
 const DB_PASS = 'parkingpassword';
 
 return [
