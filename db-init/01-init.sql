@@ -92,18 +92,13 @@ CREATE TABLE chiusure_parcheggi (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 <<<<<<< HEAD
-CREATE TABLE IF NOT EXISTS parking_lot (
+CREATE TABLE IF NOT EXISTS posto_auto (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS parking_space (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    floor INT NOT NULL,
-    code CHAR(4) NOT NULL,
-    parking_lot_id INT NOT NULL,
-    status ENUM('OCCUPIED', 'FREE', 'NOT AVAILABLE') NOT NULL,
-    CONSTRAINT fk_parking FOREIGN KEY (parking_lot_id) REFERENCES parking_lot(id)
+    piano INT NOT NULL,
+    codice CHAR(4) NOT NULL,
+    parcheggio_id INT NOT NULL,
+    stato ENUM('OCCUPATO', 'LIBERO', 'NON DISPONIBILE') NOT NULL,
+    CONSTRAINT fk_parcheggio FOREIGN KEY (parcheggio_id) REFERENCES parcheggio(id)
 );
 =======
 -- ============================================
