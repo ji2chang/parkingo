@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Entity;
+namespace parkingo\Entity;
 
-use App\Enum\StatoPrenotazione;
+use parkingo\Enum\StatoPrenotazione;
 
 class Prenotazione
 {
