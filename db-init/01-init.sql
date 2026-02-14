@@ -242,7 +242,8 @@ WHERE pr.stato = 'attiva';
 -- ============================================
 -- GRANT PERMISSIONS per parking_user
 -- ============================================
-GRANT ALL PRIVILEGES ON parcheggi_db.* TO 'parking_user'@'%';
+CREATE USER 'parking_user'@localhost IDENTIFIED BY 'parkingpassword';
+GRANT ALL PRIVILEGES ON parking_db.* TO 'parking_user'@'%';
 FLUSH PRIVILEGES;
 
 -- Messaggio finale
