@@ -6,7 +6,7 @@ class Connection {
 
     public static function get(): PDO {
         if (self::$pdo === null) {
-            require_once __DIR__ . '/config.php';
+            require_once __DIR__ . '/../config/config.php';
 
             $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
 
