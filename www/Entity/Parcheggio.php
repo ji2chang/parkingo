@@ -1,5 +1,5 @@
 <?php
-namespace App\Entity;
+namespace parkingo\Entity;
 class Parcheggio
 {
     public int $id;

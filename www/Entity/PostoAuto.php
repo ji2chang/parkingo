@@ -1,7 +1,7 @@
 <?php
-namespace App\Entity;
+namespace parkingo\Entity;
 
-use App\Enum\StatoPostoAuto;
+use parkingo\Enum\StatoPostoAuto;
 
 class PostoAuto
 {

@@ -1,5 +1,5 @@
 <?php
-namespace App\Enum;
+namespace parkingo\Enum;
 
 enum StatoPrenotazione: string
 {
