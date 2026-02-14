@@ -13,11 +13,7 @@ $config = require './config/config.php';
 $app->get('/prenotazioni/{codice}', function (Request $request,
                          Response $response,
                          array $args): Response {
-    $sql = "SELECT p.nome, p.cognome, p.targa, p.email, p.telefono, p.data_inizio, p.data_fine, p.importo_totale, p.note, p.created_at, p.updated_at, pa.nome ".
-        "FROM prenotazioni p ".
-        "WHERE codice_prenotazione=:codice_prenotazione ".
-        "JOIN parcheggi pa ".
-        "ON p.parcheggio_id=pa.id;";
+
     return $response;
 });
 
