@@ -7,10 +7,13 @@ require './vendor/autoload.php';
 
 $app = AppFactory::create();
 
+
+
 // Rotta GET per ottenere una prenotazion
 $app->get('/OttieniPrenotazione', function (Request $request,
                          Response $response,
                          array $args): Response {
+    $response->getBody()->write("ciao");
     return $response;
 });
 
@@ -18,6 +21,7 @@ $app->get('/OttieniPrenotazione', function (Request $request,
 $app->delete('/RimuoviPrenotazione', function (Request $request,
                          Response $response,
                          array $args): Response {
+    $response->getBody()->write("RimuoviPrenotazione");
     return $response;
 });
 
@@ -37,3 +41,4 @@ $app->put('/AggiornaPrenotazione', function (Request $request,
 
 
 
+$app->run();
