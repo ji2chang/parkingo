@@ -14,7 +14,7 @@ class ParcheggioRepository {
         $this->pdo = Connection::getInstance()->getConnection();
     }
 
-    public function AggiungiParcheggio(Parcheggio $parcheggio): ?Parcheggio{
+    public function aggiungiParcheggio(Parcheggio $parcheggio): ?Parcheggio{
     $sql = "INSERT INTO parcheggi (
                 nome,
                 indirizzo,
@@ -63,7 +63,7 @@ class ParcheggioRepository {
 
     return $parcheggio;
 }
-public function OttieniTuttiParcheggi(): array
+public function ottieniTuttiParcheggi(): array
 {
     $sql = "SELECT * FROM parcheggi";
     $stmt = $this->pdo->prepare($sql);
@@ -90,7 +90,7 @@ public function OttieniTuttiParcheggi(): array
 
     return $parcheggi;
 }
-public function OttieniParcheggioById(int $id): ?Parcheggio
+public function ottieniParcheggioById(int $id): ?Parcheggio
 {
     $sql = "SELECT * FROM parcheggi WHERE id = :id LIMIT 1";
     $stmt = $this->pdo->prepare($sql);
