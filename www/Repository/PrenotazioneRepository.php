@@ -1,14 +1,14 @@
 <?php
 namespace parkingo\Repository;
 
-use Connections;
+use parkingo\Utils\Connection;
 use PDO;
 
 class PrenotazioneRepository {
     private $pdo;
 
     public function __construct() {
-        $this->pdo = Connections::get();
+        $this->pdo = Connection::get();
     }
 
     /**

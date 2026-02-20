@@ -1,7 +1,8 @@
 <?php
 
 namespace parkingo\Controller;
-
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 use parkingo\Repository\PrenotazioneRepository;
 
 class PrenotazioneController {
@@ -10,7 +11,7 @@ class PrenotazioneController {
 
     public function __construct()
     {
-        this->repository = new PrenotazioneRepository();
+        $this->repository = new PrenotazioneRepository();
     }
 
 
