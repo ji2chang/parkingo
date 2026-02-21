@@ -22,6 +22,12 @@ CREATE TABLE parcheggi (
     indirizzo VARCHAR(255) NOT NULL,
     citta VARCHAR(100) NOT NULL,
     cap VARCHAR(10),
+    lat DECIMAL(9,6) NOT NULL
+        CHECK (lat >= -90.000000 AND lat <= 90.000000),
+
+    lng DECIMAL(9,6) NOT NULL
+        CHECK (lng >= -180.000000 AND lng <= 180.000000),
+    raggio FLOAT NOT NULL CHECK (raggio > 0),
     posti_totali INT NOT NULL,
     tariffa_oraria DECIMAL(5,2) NOT NULL COMMENT 'Tariffa in euro per ora',
     orario_apertura TIME NOT NULL DEFAULT '00:00:00',
@@ -30,7 +36,7 @@ CREATE TABLE parcheggi (
     descrizione TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
+
     INDEX idx_citta (citta)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -47,7 +53,7 @@ CREATE TABLE prenotazioni (
     cognome VARCHAR(100) NOT NULL,
     targa VARCHAR(20) NOT NULL,
     email VARCHAR(255) NULL COMMENT 'Opzionale per conferme',
-    telefono VARCHAR(20) NULL,
+    telefono VARCHAR(20),
     
     -- Periodo prenotazione
     data_inizio DATETIME NOT NULL,
@@ -58,10 +64,10 @@ CREATE TABLE prenotazioni (
     
     -- Metadati
     importo_totale DECIMAL(10,2) NULL COMMENT 'Calcolato o salvato',
-    note TEXT NULL,
+    note TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    annullata_at TIMESTAMP NULL,
+    annullata_at TIMESTAMP,
     
     -- Chiavi esterne
     FOREIGN KEY (parcheggio_id) REFERENCES parcheggi(id) ON DELETE RESTRICT,
