@@ -63,30 +63,30 @@ ritornano dei json di formato
 ## 🅿️ Parcheggi
 
 ### Endpoint Parkings
-| Metodo | Endpoint | Descrizione | Parametri / Path |
-|--------|-----------|-------------|------------------|
-| GET | `/api/parkings` | Lista parcheggi con filtri | `?city=`, `?lat=`, `?lng=`, `?radius=`, `?date=`, `?startTime=`, `?endTime=`, `?maxPrice=`, `?covered=`, `?electric=`, `?handicap=` |
-| GET | `/api/parkings/:id` | Dettaglio singolo parcheggio | `id` nel path |
-| GET | `/api/parkings/:id/availability` | Disponibilità slot orari | `?date=`, `?startTime=`, `?endTime=` |
+| Metodo | Endpoint                         | Descrizione                  | Parametri / Path                                                                                                                       |
+|--------|----------------------------------|------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| GET    | `/api/parkings`                  | Lista parcheggi con filtri   | `?citta=`, `?lat=`, `?lng=`, `?data=`,`?raggio=`, `?orario_apertura=`, `?orario_chiusura=`, `?al_chiuso=`, `?elettrico=`, `?disabili=` |
+| GET    | `/api/parkings/:id`              | Dettaglio singolo parcheggio | `id` nel path                                                                                                                          |
+| GET    | `/api/parkings/:id/availability` | Disponibilità slot orari     | `?data=`, `?orario_apertura=`, `?orario_chuisura=`                                                                                     |
 
 ---
 
 ## 📅 Prenotazioni
 
 ### Endpoint Bookings
-| Metodo | Endpoint | Descrizione | Body / Params |
-|--------|-----------|-------------|----------------|
-| POST | `/api/bookings` | Crea prenotazione | `{ parkingId, date, startTime, endTime, plate, name, email, phone }` |
-| GET | `/api/bookings/:code` | Recupera prenotazione per codice | `code` nel path |
-| DELETE | `/api/bookings/:code` | Cancella prenotazione | `code` nel path |
-| PATCH | `/api/bookings/:code` | Modifica prenotazione | `{ date, startTime, endTime }` |
+| Metodo | Endpoint              | Descrizione                      | Body / Params                                                                           |
+|--------|-----------------------|----------------------------------|-----------------------------------------------------------------------------------------|
+| POST   | `/api/bookings`       | Crea prenotazione                | `{ parcheggio_id, data_inizio, data_fine, targa, nome, cognome, email, telefono, note}` |
+| GET    | `/api/bookings/:code` | Recupera prenotazione per codice | `code` nel path                                                                         |
+| DELETE | `/api/bookings/:code` | Cancella prenotazione            | `code` nel path                                                                         |
+| PATCH  | `/api/bookings/:code` | Modifica prenotazione            | `{ data_inizio, data_fine }`                                                            |
 
 ---
 
 ## 📊 Analytics
 
 ### Endpoint Analytics
-| Metodo | Endpoint | Descrizione | Parametri |
-|--------|-----------|-------------|-----------|
-| GET | `/api/analytics` | Dati statistici globali | `?parkingId=`, `?month=`, `?year=` |
-| GET | `/api/analytics/heatmap` | Dati heatmap calendario | `?parkingId=`, `?month=`, `?year=` |
+| Metodo | Endpoint                 | Descrizione             | Parametri |
+|--------|--------------------------|-------------------------|-----------|
+| GET    | `/api/analytics`         | Dati statistici globali |           |
+| GET    | `/api/analytics/heatmap` | Dati heatmap calendario |           |
