@@ -1,7 +1,8 @@
 <?php
 namespace parkingo\Entity;
-class ChiusuraParcheggio
+class ChiusuraParcheggio implements \ArrayAccess
 {
+    use ArrayAccessible;
     public int $id;
     public int $parcheggio_id;
     public string $data_inizio;

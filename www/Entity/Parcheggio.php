@@ -1,7 +1,10 @@
 <?php
 namespace parkingo\Entity;
-class Parcheggio
+use ArrayAccess;
+
+class Parcheggio implements \ArrayAccess
 {
+    use ArrayAccessible;
     public int $id;
     public string $nome;
     public string $indirizzo;

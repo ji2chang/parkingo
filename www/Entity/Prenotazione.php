@@ -2,10 +2,12 @@
 
 namespace parkingo\Entity;
 
+use ArrayAccess;
 use parkingo\Enum\StatoPrenotazione;
 
-class Prenotazione
+class Prenotazione implements ArrayAccess
 {
+    use ArrayAccessible;
     public int $id;
     public string $codice_prenotazione;
     public int $parcheggio_id;

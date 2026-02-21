@@ -1,10 +1,12 @@
 <?php
 namespace parkingo\Entity;
 
+use ArrayAccess;
 use parkingo\Enum\StatoPostoAuto;
 
-class PostoAuto
+class PostoAuto implements ArrayAccess
 {
+    use ArrayAccessible;
     public int $id;
     public int $piano;
     public string $codice;
