@@ -51,7 +51,7 @@ Il database parking_db è organizzato in questo modo:
    docker compose up -d
 4. Puoi trovare le API all'indirizzo: http://localhost:9080
 
-# Come sono gli api?
+## Come sono gli api?
 ritornano dei json di formato
 {
    success : false,
@@ -59,3 +59,34 @@ ritornano dei json di formato
       att1 : "123"
    }
 }
+
+## 🅿️ Parcheggi
+
+### Endpoint Parkings
+| Metodo | Endpoint | Descrizione | Parametri / Path |
+|--------|-----------|-------------|------------------|
+| GET | `/api/parkings` | Lista parcheggi con filtri | `?city=`, `?lat=`, `?lng=`, `?radius=`, `?date=`, `?startTime=`, `?endTime=`, `?maxPrice=`, `?covered=`, `?electric=`, `?handicap=` |
+| GET | `/api/parkings/:id` | Dettaglio singolo parcheggio | `id` nel path |
+| GET | `/api/parkings/:id/availability` | Disponibilità slot orari | `?date=`, `?startTime=`, `?endTime=` |
+
+---
+
+## 📅 Prenotazioni
+
+### Endpoint Bookings
+| Metodo | Endpoint | Descrizione | Body / Params |
+|--------|-----------|-------------|----------------|
+| POST | `/api/bookings` | Crea prenotazione | `{ parkingId, date, startTime, endTime, plate, name, email, phone }` |
+| GET | `/api/bookings/:code` | Recupera prenotazione per codice | `code` nel path |
+| DELETE | `/api/bookings/:code` | Cancella prenotazione | `code` nel path |
+| PATCH | `/api/bookings/:code` | Modifica prenotazione | `{ date, startTime, endTime }` |
+
+---
+
+## 📊 Analytics
+
+### Endpoint Analytics
+| Metodo | Endpoint | Descrizione | Parametri |
+|--------|-----------|-------------|-----------|
+| GET | `/api/analytics` | Dati statistici globali | `?parkingId=`, `?month=`, `?year=` |
+| GET | `/api/analytics/heatmap` | Dati heatmap calendario | `?parkingId=`, `?month=`, `?year=` |
