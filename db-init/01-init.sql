@@ -91,16 +91,16 @@ CREATE TABLE chiusure_parcheggi (
     INDEX idx_parcheggio_periodo (parcheggio_id, data_inizio, data_fine)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-<<<<<<< HEAD
-CREATE TABLE IF NOT EXISTS posto_auto (
+
+CREATE TABLE IF NOT EXISTS posti_auto (
     id INT AUTO_INCREMENT PRIMARY KEY,
     piano INT NOT NULL,
     codice CHAR(4) NOT NULL,
     parcheggio_id INT NOT NULL,
     stato ENUM('OCCUPATO', 'LIBERO', 'NON DISPONIBILE') NOT NULL,
-    CONSTRAINT fk_parcheggio FOREIGN KEY (parcheggio_id) REFERENCES parcheggio(id)
+    CONSTRAINT fk_parcheggio FOREIGN KEY (parcheggio_id) REFERENCES parcheggi(id)
 );
-=======
+
 -- ============================================
 -- STORED PROCEDURE UTILI
 -- ============================================
