@@ -4,15 +4,17 @@
 -- ============================================
 
 -- Crea il database se non esiste
-CREATE DATABASE IF NOT EXISTS parking_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS parking_db CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
 USE parking_db;
 
 -- ============================================
 -- TABELLA: parcheggi
 -- ============================================
 DROP TABLE IF EXISTS chiusure_parcheggi;
-DROP TABLE IF EXISTS prenotazioni;
 DROP TABLE IF EXISTS parcheggi;
+DROP TABLE IF EXISTS prenotazioni;
+
 
 CREATE TABLE parcheggi (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -30,7 +32,7 @@ CREATE TABLE parcheggi (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     INDEX idx_citta (citta)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ============================================
 -- TABELLA: prenotazioni
@@ -73,7 +75,7 @@ CREATE TABLE prenotazioni (
     
     -- Vincoli (rimosso CURRENT_TIMESTAMP dal CHECK per compatibilità)
     CONSTRAINT chk_periodo CHECK (data_fine > data_inizio)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ============================================
 -- TABELLA: chiusure_parcheggi (opzionale)
@@ -89,7 +91,7 @@ CREATE TABLE chiusure_parcheggi (
     
     FOREIGN KEY (parcheggio_id) REFERENCES parcheggi(id) ON DELETE CASCADE,
     INDEX idx_parcheggio_periodo (parcheggio_id, data_inizio, data_fine)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 CREATE TABLE IF NOT EXISTS posti_auto (
@@ -107,32 +109,42 @@ CREATE TABLE IF NOT EXISTS posti_auto (
 
 -- Procedura per generare codice prenotazione univoco (stile nanoid - 21 caratteri)
 DELIMITER //
-
 DROP PROCEDURE IF EXISTS genera_codice_prenotazione//
 CREATE PROCEDURE genera_codice_prenotazione(OUT nuovo_codice VARCHAR(21))
 BEGIN
     DECLARE codice_esistente INT DEFAULT 1;
-    DECLARE caratteri VARCHAR(64) DEFAULT '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
+
+    -- Variabile con collation coerente con la tabella
+    DECLARE caratteri VARCHAR(64)
+        CHARACTER SET utf8mb4
+        COLLATE utf8mb4_general_ci
+        DEFAULT '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
+
     DECLARE lunghezza INT DEFAULT 21;
     DECLARE i INT;
-    
+
+    -- Anche l'output deve avere la collation corretta
+    SET nuovo_codice = '' COLLATE utf8mb4_general_ci;
+
     WHILE codice_esistente > 0 DO
-        SET nuovo_codice = '';
-        SET i = 0;
-        
-        WHILE i < lunghezza DO
-            SET nuovo_codice = CONCAT(
-                nuovo_codice,
-                SUBSTRING(caratteri, FLOOR(1 + RAND() * 64), 1)
-            );
-            SET i = i + 1;
+            SET nuovo_codice = '' COLLATE utf8mb4_general_ci;
+            SET i = 0;
+
+            WHILE i < lunghezza DO
+                    SET nuovo_codice = CONCAT(
+                            nuovo_codice,
+                            SUBSTRING(caratteri, FLOOR(1 + RAND() * 64), 1)
+                                       );
+                    SET i = i + 1;
+                END WHILE;
+
+            -- Nessun CONVERT: MariaDB gestisce correttamente la collation se le variabili sono coerenti
+            SELECT COUNT(*) INTO codice_esistente
+            FROM prenotazioni
+            WHERE codice_prenotazione = nuovo_codice;
         END WHILE;
-        
-        SELECT COUNT(*) INTO codice_esistente 
-        FROM prenotazioni 
-        WHERE codice_prenotazione = nuovo_codice;
-    END WHILE;
-END //
+END//
+
 
 -- Funzione per calcolare posti disponibili in un periodo
 DROP FUNCTION IF EXISTS posti_disponibili//
