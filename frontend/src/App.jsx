@@ -1,45 +1,34 @@
-import { Routes, Route } from 'react-router-dom'
-import './App.css'
-import Header from './components/Header'
-import Footer from './components/Footer'
-import Home from './pages/Home'
-import Login from './pages/Login'
-import CityMap from './pages/CityMap'
-import ParkingZoneMap from './pages/ParkingZoneMap'
-import Booking from './pages/Booking'
-import ParkingList from './pages/ParkingList'
-import About from './pages/About'
-import Contact from './pages/Contact'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { MainLayout } from './components/MainLayout'
+import { ToastProvider } from './hooks/useToast'
+import { BookingProvider } from './hooks/useBooking'
+import { HomePage } from './pages/home'
+import { SearchPage } from './pages/SearchPage'
+import { MapPage } from './pages/MapPage'
+import { BookingPage } from './pages/BookingPage'
+import { ConfirmationPage } from './pages/ConfirmationPage'
+import { ManagePage } from './pages/ManagePage'
+import { AnalyticsPage } from './pages/AnalyticsPage'
 
-function App() {
+export default function App() {
   return (
-    <Routes>
-      {/* Login route without header/footer */}
-      <Route path="/login" element={<Login />} />
-
-      {/* Main routes with layout */}
-      <Route
-        path="/*"
-        element={
-          <div className="min-h-screen flex flex-col bg-gray-50">
-            <Header />
-            <main className="flex-1">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/city-map" element={<CityMap />} />
-                <Route path="/parking/:id" element={<ParkingZoneMap />} />
-                <Route path="/booking" element={<Booking />} />
-                <Route path="/parkings" element={<ParkingList />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        }
-      />
-    </Routes>
+    <ToastProvider>
+      <BookingProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<MainLayout />}>
+              <Route index element={<HomePage />} />
+              <Route path="search" element={<SearchPage />} />
+              <Route path="map" element={<MapPage />} />
+              <Route path="booking/:parkingId" element={<BookingPage />} />
+              <Route path="confirmation/:code" element={<ConfirmationPage />} />
+              <Route path="manage/:code" element={<ManagePage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </BookingProvider>
+    </ToastProvider>
   )
 }
-
-export default App
