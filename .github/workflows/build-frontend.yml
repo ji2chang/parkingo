@@ -1,0 +1,36 @@
+name: Build Frontend (DEVFRONT)
+
+on:
+  push:
+    branches: [ 'DEVFRONT' ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build frontend and upload artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
