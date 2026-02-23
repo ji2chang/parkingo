@@ -19,6 +19,15 @@ class Parcheggio implements \ArrayAccess
     public string $created_at;
     public string $updated_at;
 
+    // Posizione geografica
+    public ?float $lat;
+    public ?float $lng;
+
+    // Caratteristiche
+    public bool $al_chiuso;
+    public bool $elettrico;
+    public bool $disabili;
+
     public function __construct(array $data = [])
     {
         foreach ($data as $key => $value) {
