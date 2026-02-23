@@ -1,16 +1,19 @@
 <?php
+
+require './vendor/autoload.php';
+
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 use parkingo\Controller\PrenotazioneController;
-require './vendor/autoload.php';
+
 
 $app = AppFactory::create();
 
 $config = require './config/config.php';
 
 // Rotta GET per ottenere una prenotazion
-$app->get('/prenotazioni/{codice}', PrenotazioneController::class.':findByCodice' );
+$app->get('/bookings/{code}', PrenotazioneController::class.':findByCodice' );
 
 // Rotta DELETE per rimuovere una prenotazione
 $app->delete('/prenotazioni/{codice}', function (Request $request,
