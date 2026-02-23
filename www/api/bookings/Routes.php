@@ -13,5 +13,9 @@ $app = AppFactory::create();
 $config = require '../../config/config.php';
 
 $app->setBasePath('/api/bookings');
+$app->get('/', function (Request $request, Response $response, array $args) {
+    echo 'ciao';
+});
 $app->get('/{code}', PrenotazioneController::class.':findByCodice' );
 
+$app->run();
