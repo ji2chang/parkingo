@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { motion } from 'framer-motion'
@@ -9,33 +9,35 @@ import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { HeatmapCalendar } from '../components/HeatmapCalendar'
-import { getParkingById } from '../utils/parkings'
-import { formatCurrency, formatDateRange, generateCode } from '../utils/format'
+import { getParkingById, getParkingAvailability } from '../services/api'
+import { formatCurrency, formatDateRange } from '../utils/format'
 import { useBooking } from '../hooks/useBooking'
 import { useToast } from '../hooks/useToast'
-
-function buildMockAvailability(parking) {
-  const avail = {}
-  const today = new Date()
-  for (let i = 0; i < 60; i++) {
-    const d = addHours(today, i * 24)
-    const key = d.toISOString().slice(0, 10)
-    const random = Math.random()
-    avail[key] = {
-      available: Math.floor(random * parking.totalSpots),
-      total: parking.totalSpots,
-    }
-  }
-  return avail
-}
 
 export function BookingPage() {
   const { parkingId } = useParams()
   const navigate = useNavigate()
-  const { saveBooking } = useBooking()
+  const { book } = useBooking()
   const { showToast } = useToast()
   const [loading, setLoading] = useState(false)
-  const parking = getParkingById(parkingId)
+  const [parking, setParking] = useState(null)
+  const [parkingError, setParkingError] = useState(false)
+  const [availability, setAvailability] = useState({})
+
+  // Carica dati parcheggio dall'API
+  useEffect(() => {
+    getParkingById(parkingId)
+      .then((data) => setParking(data))
+      .catch(() => setParkingError(true))
+  }, [parkingId])
+
+  // Carica disponibilità
+  useEffect(() => {
+    if (!parkingId) return
+    getParkingAvailability(parkingId, { data: new Date().toISOString().slice(0, 10) })
+      .then((data) => setAvailability(data ?? {}))
+      .catch(() => setAvailability({}))
+  }, [parkingId])
 
   const {
     register,
@@ -63,13 +65,13 @@ export function BookingPage() {
   const total = useMemo(() => {
     if (!parking) return 0
     return hours >= 24
-      ? Math.ceil(hours / 24) * parking.pricePerDay
-      : hours * parking.pricePerHour
+      ? Math.ceil(hours / 24) * (parking.prezzo_giornaliero ?? parking.pricePerDay ?? 0)
+      : hours * (parking.prezzo_orario ?? parking.pricePerHour ?? 0)
   }, [hours, parking])
 
-  const availability = useMemo(() => (parking ? buildMockAvailability(parking) : {}), [parking])
+  // availability è già caricata via API sopra
 
-  if (!parking) {
+  if (parkingError) {
     return (
       <div className="glass-panel rounded-3xl border border-white/10 p-10 text-center">
         <p className="text-xl font-semibold">Parcheggio non trovato</p>
@@ -80,25 +82,40 @@ export function BookingPage() {
     )
   }
 
-  async function onSubmit(data) {
-    setLoading(true)
-    await new Promise((r) => setTimeout(r, 1200))
-    const code = generateCode()
-    const booking = {
-      code,
-      parking,
-      customer: data,
-      period: { start: data.start, end: data.end },
-      total,
-      status: 'confirmed',
-      createdAt: new Date().toISOString(),
-    }
-    saveBooking(booking)
-    showToast({ type: 'success', title: 'Prenotazione confermata!', description: `Codice: ${code}` })
-    navigate(`/confirmation/${code}`, { state: { booking } })
+  if (!parking) {
+    return (
+      <div className="glass-panel rounded-3xl border border-white/10 p-10 text-center">
+        <p className="text-white/40 text-lg">Caricamento…</p>
+      </div>
+    )
   }
 
-  const ratio = parking.availableSpots / parking.totalSpots
+  async function onSubmit(data) {
+    setLoading(true)
+    const body = {
+      parcheggio_id: parkingId,
+      data_inizio: data.start,
+      data_fine: data.end,
+      targa: data.plate,
+      nome: data.firstName,
+      cognome: data.lastName,
+      email: data.email,
+      telefono: data.phone ?? '',
+      note: data.note ?? '',
+    }
+    const result = await book(body)
+    setLoading(false)
+    if (result) {
+      showToast({ type: 'success', title: 'Prenotazione confermata!', description: `Codice: ${result.codice}` })
+      navigate(`/confirmation/${result.codice}`, { state: { booking: result } })
+    } else {
+      showToast({ type: 'danger', title: 'Errore', description: 'Impossibile completare la prenotazione.' })
+    }
+  }
+
+  const availableSpots = parking.posti_disponibili ?? parking.availableSpots ?? 0
+  const totalSpots = parking.posti_totali ?? parking.totalSpots ?? 1
+  const ratio = availableSpots / totalSpots
   const availVariant = ratio > 0.5 ? 'success' : ratio > 0.2 ? 'warning' : 'danger'
 
   return (
@@ -188,22 +205,24 @@ export function BookingPage() {
 
         {/* Parking info sidebar */}
         <div className="space-y-6">
-          <Card title={parking.name}>
+          <Card title={parking.nome ?? parking.name}>
             <div className="space-y-3">
               <p className="flex items-center gap-1.5 text-sm text-white/60">
                 <MapPin className="h-4 w-4 flex-shrink-0" />
-                {parking.address}, {parking.city}
+                {parking.indirizzo ?? parking.address}, {parking.citta ?? parking.city}
               </p>
-              <div className="flex items-center gap-1.5 text-warning text-sm font-semibold">
-                <Star className="h-4 w-4 fill-warning" />
-                {parking.rating.toFixed(1)} / 5.0
-              </div>
+              {parking.valutazione != null && (
+                <div className="flex items-center gap-1.5 text-warning text-sm font-semibold">
+                  <Star className="h-4 w-4 fill-warning" />
+                  {Number(parking.valutazione ?? parking.rating).toFixed(1)} / 5.0
+                </div>
+              )}
               <Badge variant={availVariant}>
                 <Car className="h-3 w-3 mr-1 inline" />
-                {parking.availableSpots} posti liberi
+                {availableSpots} posti liberi
               </Badge>
               <div className="flex flex-wrap gap-2 pt-1">
-                {parking.amenities.map((a) => (
+                {(parking.servizi ?? parking.amenities ?? []).map((a) => (
                   <Badge key={a}>{a}</Badge>
                 ))}
               </div>
@@ -214,11 +233,11 @@ export function BookingPage() {
             <div className="space-y-3 text-sm text-white/70">
               <div className="flex justify-between">
                 <span>Tariffa oraria</span>
-                <span className="text-white">{formatCurrency(parking.pricePerHour)}/h</span>
+                <span className="text-white">{formatCurrency(parking.prezzo_orario ?? parking.pricePerHour ?? 0)}/h</span>
               </div>
               <div className="flex justify-between">
                 <span>Tariffa giornaliera</span>
-                <span className="text-white">{formatCurrency(parking.pricePerDay)}/g</span>
+                <span className="text-white">{formatCurrency(parking.prezzo_giornaliero ?? parking.pricePerDay ?? 0)}/g</span>
               </div>
               <div className="flex justify-between">
                 <span>Periodo</span>
