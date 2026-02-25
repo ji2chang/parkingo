@@ -1,34 +1,32 @@
 <?php
-
 namespace parkingo\Entity;
-
 use ArrayAccess;
-use parkingo\Enum\StatoPrenotazione;
 
-class Prenotazione implements ArrayAccess
+class Parcheggio implements \ArrayAccess
 {
     use ArrayAccessible;
     public int $id;
-    public string $codice_prenotazione;
-    public int $parcheggio_id;
-
     public string $nome;
-    public string $cognome;
-    public string $targa;
-    public ?string $email;
-    public ?string $telefono;
-
-    public string $data_inizio;
-    public string $data_fine;
-
-    public StatoPrenotazione $stato; // attiva, annullata, scaduta, completata
-
-    public ?float $importo_totale;
-    public ?string $note;
-
+    public string $indirizzo;
+    public string $citta;
+    public ?string $cap;
+    public int $posti_totali;
+    public float $tariffa_oraria;
+    public string $orario_apertura;
+    public string $orario_chiusura;
+    public bool $aperto_24h;
+    public ?string $descrizione;
     public string $created_at;
     public string $updated_at;
-    public ?string $annullata_at;
+
+    // Posizione geografica
+    public ?float $lat;
+    public ?float $lng;
+
+    // Caratteristiche
+    public bool $al_chiuso;
+    public bool $elettrico;
+    public bool $disabili;
 
     public function __construct(array $data = [])
     {
