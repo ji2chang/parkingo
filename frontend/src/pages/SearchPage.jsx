@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Search, Bookmark, X, SlidersHorizontal } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { ParkingCard } from '../components/ParkingCard'
-import { searchParkings } from '../utils/parkings'
+import { getParkings } from '../services/api'
 import { useSavedSearches } from '../hooks/useSavedSearches'
 import { useToast } from '../hooks/useToast'
 import { formatRelative } from '../utils/format'
@@ -18,19 +18,43 @@ export function SearchPage() {
   const [maxPrice, setMaxPrice] = useState('')
   const [amenities, setAmenities] = useState([])
   const [showFilters, setShowFilters] = useState(false)
+  const [results, setResults] = useState([])
+  const [loading, setLoading] = useState(false)
   const { savedSearches, addSearch, removeSearch } = useSavedSearches()
   const { showToast } = useToast()
 
-  const results = useMemo(
-    () =>
-      searchParkings({
-        query,
-        city,
-        maxPrice: maxPrice ? parseFloat(maxPrice) : null,
-        amenities,
-      }),
-    [query, city, maxPrice, amenities]
+  const fetchResults = useCallback(
+    async ({ q = query, c = city, mp = maxPrice, am = amenities } = {}) => {
+      setLoading(true)
+      try {
+        const params = {}
+        if (c) params.citta = c
+        if (mp) params.prezzo_max = parseFloat(mp)
+        if (q) params.query = q
+        // amenities come array: al_chiuso, elettrico, disabili
+        am.forEach((a) => {
+          if (a === 'Coperto') params.al_chiuso = true
+          if (a === 'Colonnine EV') params.elettrico = true
+          if (a === 'Disabili') params.disabili = true
+        })
+        const data = await getParkings(params)
+        setResults(Array.isArray(data) ? data : [])
+      } catch (err) {
+        showToast({ type: 'danger', title: 'Errore', description: err.message })
+        setResults([])
+      } finally {
+        setLoading(false)
+      }
+    },
+    [query, city, maxPrice, amenities, showToast]
   )
+
+  // Carica al mount e quando cambiano i filtri (debounce leggero)
+  useEffect(() => {
+    const t = setTimeout(() => fetchResults(), 400)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, city, maxPrice, amenities])
 
   function toggleAmenity(a) {
     setAmenities((prev) => (prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]))
@@ -183,9 +207,13 @@ export function SearchPage() {
       {/* Results */}
       <div>
         <p className="text-sm text-white/50 mb-4">
-          {results.length} parcheggio{results.length !== 1 ? 'i' : ''} trovato{results.length !== 1 ? 'i' : ''}
+          {loading ? 'Ricerca in corso…' : `${results.length} parcheggio${results.length !== 1 ? 'i' : ''} trovato${results.length !== 1 ? 'i' : ''}`}
         </p>
-        {results.length === 0 ? (
+        {loading ? (
+          <div className="glass-panel rounded-3xl border border-white/10 p-12 text-center">
+            <p className="text-white/40 text-lg">Caricamento…</p>
+          </div>
+        ) : results.length === 0 ? (
           <div className="glass-panel rounded-3xl border border-white/10 p-12 text-center">
             <p className="text-white/40 text-lg">Nessun parcheggio trovato con i filtri selezionati.</p>
             <Button variant="ghost" className="mt-4" onClick={reset}>

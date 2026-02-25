@@ -6,7 +6,7 @@ import { MapPin, Navigation, Star, Car } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { MapFilters } from '../components/MapFilters'
-import { PARKINGS } from '../utils/parkings'
+import { getParkings } from '../services/api'
 import { formatCurrency } from '../utils/format'
 
 const CENTER = [45.4641, 9.1919]
@@ -67,25 +67,33 @@ function makePopupHtml(parking) {
 
 export function MapPage() {
   const navigate = useNavigate()
-  const mapRef = useRef(null)         // Leaflet map instance
-  const mapElRef = useRef(null)       // DOM element for the map
-  const markersRef = useRef([])       // current L.Marker instances
+  const mapRef = useRef(null)
+  const mapElRef = useRef(null)
+  const markersRef = useRef([])
   const [filters, setFilters] = useState({ amenities: [], maxPrice: null })
   const [selected, setSelected] = useState(null)
+  const [allParkings, setAllParkings] = useState([])
+
+  // Carica parcheggi dall'API al mount
+  useEffect(() => {
+    getParkings()
+      .then((data) => setAllParkings(Array.isArray(data) ? data : []))
+      .catch(() => setAllParkings([]))
+  }, [])
 
   /** Filter parkings by active filters */
   const filtered = useMemo(
     () =>
-      PARKINGS.filter((p) => {
-        if (filters.maxPrice && p.pricePerHour > filters.maxPrice) return false
+      allParkings.filter((p) => {
+        if (filters.maxPrice && p.prezzo_orario > filters.maxPrice) return false
         if (
           filters.amenities?.length > 0 &&
-          !filters.amenities.every((a) => p.amenities.includes(a))
+          !filters.amenities.every((a) => p.servizi?.includes(a))
         )
           return false
         return true
       }),
-    [filters]
+    [filters, allParkings]
   )
 
   /** Handle clicks on "Prenota ora" buttons inside Leaflet popups */
