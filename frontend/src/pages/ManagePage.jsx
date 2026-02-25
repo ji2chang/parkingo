@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { CheckCircle, XCircle, Calendar, Car, MapPin, AlertTriangle } from 'lucide-react'
 import { Card } from '../components/ui/Card'
@@ -13,13 +13,29 @@ import { useToast } from '../hooks/useToast'
 export function ManagePage() {
   const { code } = useParams()
   const navigate = useNavigate()
-  const { bookings, cancelBooking } = useBooking()
+  const { fetchBooking, removeBooking, loading } = useBooking()
   const { showToast } = useToast()
   const [cancelOpen, setCancelOpen] = useState(false)
+  const [booking, setBooking] = useState(null)
+  const [notFound, setNotFound] = useState(false)
 
-  const booking = bookings.find((b) => b.code === code)
+  useEffect(() => {
+    if (!code) return
+    fetchBooking(code).then((result) => {
+      if (result) setBooking(result)
+      else setNotFound(true)
+    })
+  }, [code, fetchBooking])
 
-  if (!booking) {
+  if (loading && !booking) {
+    return (
+      <div className="glass-panel rounded-3xl border border-white/10 p-10 text-center">
+        <p className="text-white/40 text-lg">Caricamento…</p>
+      </div>
+    )
+  }
+
+  if (notFound || !booking) {
     return (
       <div className="glass-panel rounded-3xl border border-white/10 p-10 text-center">
         <p className="text-xl font-semibold">Prenotazione non trovata</p>
@@ -31,13 +47,31 @@ export function ManagePage() {
     )
   }
 
-  const isCancelled = booking.status === 'cancelled'
+  const isCancelled = booking.stato === 'cancellata' || booking.status === 'cancelled'
 
-  function handleCancel() {
-    cancelBooking(code)
+  async function handleCancel() {
+    const ok = await removeBooking(code)
     setCancelOpen(false)
-    showToast({ type: 'danger', title: 'Prenotazione cancellata', description: `Codice: ${code}` })
+    if (ok) {
+      showToast({ type: 'danger', title: 'Prenotazione cancellata', description: `Codice: ${code}` })
+      setBooking((prev) => ({ ...prev, stato: 'cancellata' }))
+    } else {
+      showToast({ type: 'danger', title: 'Errore', description: 'Impossibile cancellare la prenotazione.' })
+    }
   }
+
+  // Supporto sia campi API italiani che inglesi
+  const parkingName = booking.parcheggio?.nome ?? booking.parking?.name ?? '—'
+  const parkingAddress = booking.parcheggio?.indirizzo ?? booking.parking?.address ?? ''
+  const parkingCity = booking.parcheggio?.citta ?? booking.parking?.city ?? ''
+  const parkingAmenities = booking.parcheggio?.servizi ?? booking.parking?.amenities ?? []
+  const periodStart = booking.data_inizio ?? booking.period?.start
+  const periodEnd = booking.data_fine ?? booking.period?.end
+  const plate = booking.targa ?? booking.customer?.plate ?? '—'
+  const firstName = booking.nome ?? booking.customer?.firstName ?? ''
+  const lastName = booking.cognome ?? booking.customer?.lastName ?? ''
+  const email = booking.email ?? booking.customer?.email ?? ''
+  const total = booking.importo ?? booking.total ?? 0
 
   return (
     <div className="space-y-8">
@@ -56,11 +90,11 @@ export function ManagePage() {
           <div className="space-y-3 text-sm text-white/70">
             <p className="text-lg font-semibold text-white flex items-center gap-2">
               <MapPin className="h-5 w-5 text-primary-light" />
-              {booking.parking?.name}
+              {parkingName}
             </p>
-            <p>{booking.parking?.address}, {booking.parking?.city}</p>
+            <p>{parkingAddress}{parkingCity ? `, ${parkingCity}` : ''}</p>
             <div className="flex flex-wrap gap-2 pt-1">
-              {booking.parking?.amenities?.map((a) => <Badge key={a}>{a}</Badge>)}
+              {parkingAmenities.map((a) => <Badge key={a}>{a}</Badge>)}
             </div>
           </div>
         </Card>
@@ -69,11 +103,11 @@ export function ManagePage() {
           <div className="space-y-3 text-sm text-white/70">
             <p className="flex items-start gap-2">
               <Calendar className="h-4 w-4 mt-0.5 flex-shrink-0" />
-              <span>{formatDateRange(booking.period?.start, booking.period?.end)}</span>
+              <span>{formatDateRange(periodStart, periodEnd)}</span>
             </p>
             <p className="flex items-center gap-2">
               <Car className="h-4 w-4 flex-shrink-0" />
-              Targa: <span className="font-semibold text-white">{booking.customer?.plate}</span>
+              Targa: <span className="font-semibold text-white">{plate}</span>
             </p>
           </div>
         </Card>
@@ -82,15 +116,15 @@ export function ManagePage() {
           <div className="space-y-3 text-sm text-white/70">
             <div className="flex justify-between">
               <span>Intestato a</span>
-              <span className="text-white">{booking.customer?.firstName} {booking.customer?.lastName}</span>
+              <span className="text-white">{firstName} {lastName}</span>
             </div>
             <div className="flex justify-between">
               <span>Email</span>
-              <span className="text-white">{booking.customer?.email}</span>
+              <span className="text-white">{email}</span>
             </div>
             <div className="flex justify-between border-t border-white/10 pt-3 text-base font-semibold">
               <span className="text-white">Totale</span>
-              <span className="text-primary-light">{formatCurrency(booking.total)}</span>
+              <span className="text-primary-light">{formatCurrency(total)}</span>
             </div>
           </div>
         </Card>
