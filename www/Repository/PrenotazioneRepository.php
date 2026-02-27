@@ -93,14 +93,25 @@ class PrenotazioneRepository {
                     stato = :stato, 
                     note = :note 
                 WHERE codice_prenotazione = :codice_prenotazione";
-        return $this->pdo->prepare($sql)->execute($data->toArray());
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($data->toArray());
+        return $stmt->rowCount() > 0;
     }
 
     /**
      * Elimina una prenotazione.
      */
-    public function delete(string $codice): bool {
-        $sql = "DELETE FROM prenotazioni WHERE codice_prenotazione = :codice";
-        return $this->pdo->prepare($sql)->execute(['codice' => $codice]);
+    public function delete(string $codice): bool
+    {
+        $sql = "DELETE FROM prenotazioni 
+                WHERE codice_prenotazione = :codice";
+
+        $stmt = $this->pdo->prepare($sql);
+
+        $stmt->execute([
+            'codice' => $codice
+        ]);
+
+        return $stmt->rowCount() > 0;
     }
 }
