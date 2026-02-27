@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Semplice API Tester</title>
+<style>
+    body { font-family: Arial; margin: 20px; }
+    input { padding: 6px; margin: 4px 0; width: 100%; }
+    button { padding: 8px 14px; margin-top: 10px; cursor: pointer; }
+    .row { display: flex; gap: 10px; margin-bottom: 5px; }
+    .row input { flex: 1; }
+    .remove-btn { background: #c62828; color: white; border: none; padding: 6px 10px; }
+    pre { background: #eee; padding: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+
+<h2>Semplice API Tester</h2>
+
+<label>Metodo</label>
+<select id="method">
+    <option>GET</option>
+    <option>POST</option>
+    <option>PUT</option>
+    <option>PATCH</option>
+    <option>DELETE</option>
+</select>
+
+<label>URL</label>
+<input id="url" type="text" placeholder="https://example.com/api">
+
+<h3>Parametri</h3>
+<div id="params"></div>
+<button onclick="addParam()">Aggiungi parametro</button>
+
+<br><br>
+<button onclick="sendRequest()">Invia richiesta</button>
+
+<h3>Risposta</h3>
+<pre id="response"></pre>
+
+<script>
+function addParam() {
+    const div = document.createElement("div");
+    div.className = "row";
+    div.innerHTML = `
+        <input placeholder="nome" class="pname">
+        <input placeholder="valore" class="pvalue">
+        <button class="remove-btn" onclick="this.parentElement.remove()">X</button>
+    `;
+    document.getElementById("params").appendChild(div);
+}
+
+async function sendRequest() {
+    const method = document.getElementById("method").value;
+    const url = document.getElementById("url").value;
+
+    const names = document.querySelectorAll(".pname");
+    const values = document.querySelectorAll(".pvalue");
+
+    let params = {};
+    for (let i = 0; i < names.length; i++) {
+        const n = names[i].value.trim();
+        const v = values[i].value.trim();
+        if (n !== "") params[n] = v;
+    }
+
+    let finalUrl = url;
+    let options = { method };
+
+    if (method === "GET") {
+        const query = new URLSearchParams(params).toString();
+        if (query) finalUrl += "?" + query;
+    } else {
+        options.headers = { "Content-Type": "application/x-www-form-urlencoded" };
+        options.body = new URLSearchParams(params).toString();
+    }
+
+    try {
+        const res = await fetch(finalUrl, options);
+        const text = await res.text();
+        document.getElementById("response").textContent =
+            "Status: " + res.status + "\n\n" + text;
+    } catch (err) {
+        document.getElementById("response").textContent = "Errore: " + err;
+    }
+}
+</script>
+
+</body>
+</html>

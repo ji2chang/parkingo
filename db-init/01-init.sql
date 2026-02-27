@@ -4,15 +4,17 @@
 -- ============================================
 
 -- Crea il database se non esiste
-CREATE DATABASE IF NOT EXISTS parking_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS parking_db CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
 USE parking_db;
 
 -- ============================================
 -- TABELLA: parcheggi
 -- ============================================
 DROP TABLE IF EXISTS chiusure_parcheggi;
-DROP TABLE IF EXISTS prenotazioni;
 DROP TABLE IF EXISTS parcheggi;
+DROP TABLE IF EXISTS prenotazioni;
+
 
 CREATE TABLE parcheggi (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -20,6 +22,12 @@ CREATE TABLE parcheggi (
     indirizzo VARCHAR(255) NOT NULL,
     citta VARCHAR(100) NOT NULL,
     cap VARCHAR(10),
+    lat DECIMAL(9,6) NOT NULL
+        CHECK (lat >= -90.000000 AND lat <= 90.000000),
+
+    lng DECIMAL(9,6) NOT NULL
+        CHECK (lng >= -180.000000 AND lng <= 180.000000),
+    raggio FLOAT NOT NULL CHECK (raggio > 0),
     posti_totali INT NOT NULL,
     tariffa_oraria DECIMAL(5,2) NOT NULL COMMENT 'Tariffa in euro per ora',
     orario_apertura TIME NOT NULL DEFAULT '00:00:00',
@@ -28,9 +36,9 @@ CREATE TABLE parcheggi (
     descrizione TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
+
     INDEX idx_citta (citta)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ============================================
 -- TABELLA: prenotazioni
@@ -45,7 +53,7 @@ CREATE TABLE prenotazioni (
     cognome VARCHAR(100) NOT NULL,
     targa VARCHAR(20) NOT NULL,
     email VARCHAR(255) NULL COMMENT 'Opzionale per conferme',
-    telefono VARCHAR(20) NULL,
+    telefono VARCHAR(20),
     
     -- Periodo prenotazione
     data_inizio DATETIME NOT NULL,
@@ -56,10 +64,10 @@ CREATE TABLE prenotazioni (
     
     -- Metadati
     importo_totale DECIMAL(10,2) NULL COMMENT 'Calcolato o salvato',
-    note TEXT NULL,
+    note TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    annullata_at TIMESTAMP NULL,
+    annullata_at TIMESTAMP,
     
     -- Chiavi esterne
     FOREIGN KEY (parcheggio_id) REFERENCES parcheggi(id) ON DELETE RESTRICT,
@@ -73,7 +81,7 @@ CREATE TABLE prenotazioni (
     
     -- Vincoli (rimosso CURRENT_TIMESTAMP dal CHECK per compatibilità)
     CONSTRAINT chk_periodo CHECK (data_fine > data_inizio)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ============================================
 -- TABELLA: chiusure_parcheggi (opzionale)
@@ -89,25 +97,17 @@ CREATE TABLE chiusure_parcheggi (
     
     FOREIGN KEY (parcheggio_id) REFERENCES parcheggi(id) ON DELETE CASCADE,
     INDEX idx_parcheggio_periodo (parcheggio_id, data_inizio, data_fine)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- ============================================
--- DATI DI ESEMPIO
--- ============================================
 
--- Inserimento parcheggi di esempio
-INSERT INTO parcheggi (nome, indirizzo, citta, cap, posti_totali, tariffa_oraria, orario_apertura, orario_chiusura, aperto_24h, descrizione) VALUES
-('Parcheggio Centro', 'Via Roma 15', 'Milano', '20121', 150, 2.50, '06:00:00', '22:00:00', FALSE, 'Parcheggio coperto nel centro storico'),
-('Parking Stazione', 'Piazza Stazione 1', 'Milano', '20124', 300, 2.00, '00:00:00', '23:59:59', TRUE, 'Parcheggio scoperto adiacente alla stazione centrale'),
-('Garage Duomo', 'Via Torino 45', 'Milano', '20123', 80, 3.00, '07:00:00', '20:00:00', FALSE, 'Garage multipiano vicino al Duomo'),
-('Park & Ride Nord', 'Via Melchiorre Gioia 200', 'Milano', '20125', 500, 1.50, '00:00:00', '23:59:59', TRUE, 'Grande parcheggio di interscambio con metro');
-
--- Inserimento prenotazioni di esempio (con codici in stile nanoid)
-INSERT INTO prenotazioni (codice_prenotazione, parcheggio_id, nome, cognome, targa, email, data_inizio, data_fine, stato, importo_totale) VALUES
-('V1StGXR8_Z5jdHi6B-myT', 1, 'Mario', 'Rossi', 'AB123CD', 'mario.rossi@email.it', '2026-02-10 09:00:00', '2026-02-10 18:00:00', 'attiva', 22.50),
-('3z4F5m6n7p8q9r0s1t2u3', 2, 'Laura', 'Bianchi', 'EF456GH', 'laura.bianchi@email.it', '2026-02-11 14:00:00', '2026-02-11 20:00:00', 'attiva', 12.00),
-('K2nP9qR4sT7vW1xY5zA8b', 1, 'Giuseppe', 'Verdi', 'IJ789KL', NULL, '2026-02-09 08:00:00', '2026-02-09 12:00:00', 'completata', 10.00),
-('M8nB7vC6xZ5aS4dF3gH2j', 3, 'Anna', 'Neri', 'MN012OP', 'anna.neri@email.it', '2026-02-08 10:00:00', '2026-02-08 14:00:00', 'annullata', 12.00);
+CREATE TABLE IF NOT EXISTS posti_auto (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    piano INT NOT NULL,
+    codice CHAR(4) NOT NULL,
+    parcheggio_id INT NOT NULL,
+    stato ENUM('OCCUPATO', 'LIBERO', 'NON DISPONIBILE') NOT NULL,
+    CONSTRAINT fk_parcheggio FOREIGN KEY (parcheggio_id) REFERENCES parcheggi(id)
+);
 
 -- ============================================
 -- STORED PROCEDURE UTILI
@@ -115,32 +115,42 @@ INSERT INTO prenotazioni (codice_prenotazione, parcheggio_id, nome, cognome, tar
 
 -- Procedura per generare codice prenotazione univoco (stile nanoid - 21 caratteri)
 DELIMITER //
-
 DROP PROCEDURE IF EXISTS genera_codice_prenotazione//
 CREATE PROCEDURE genera_codice_prenotazione(OUT nuovo_codice VARCHAR(21))
 BEGIN
     DECLARE codice_esistente INT DEFAULT 1;
-    DECLARE caratteri VARCHAR(64) DEFAULT '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
+
+    -- Variabile con collation coerente con la tabella
+    DECLARE caratteri VARCHAR(64)
+        CHARACTER SET utf8mb4
+        COLLATE utf8mb4_general_ci
+        DEFAULT '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
+
     DECLARE lunghezza INT DEFAULT 21;
     DECLARE i INT;
-    
+
+    -- Anche l'output deve avere la collation corretta
+    SET nuovo_codice = '' COLLATE utf8mb4_general_ci;
+
     WHILE codice_esistente > 0 DO
-        SET nuovo_codice = '';
-        SET i = 0;
-        
-        WHILE i < lunghezza DO
-            SET nuovo_codice = CONCAT(
-                nuovo_codice,
-                SUBSTRING(caratteri, FLOOR(1 + RAND() * 64), 1)
-            );
-            SET i = i + 1;
+            SET nuovo_codice = '' COLLATE utf8mb4_general_ci;
+            SET i = 0;
+
+            WHILE i < lunghezza DO
+                    SET nuovo_codice = CONCAT(
+                            nuovo_codice,
+                            SUBSTRING(caratteri, FLOOR(1 + RAND() * 64), 1)
+                                       );
+                    SET i = i + 1;
+                END WHILE;
+
+            -- Nessun CONVERT: MariaDB gestisce correttamente la collation se le variabili sono coerenti
+            SELECT COUNT(*) INTO codice_esistente
+            FROM prenotazioni
+            WHERE codice_prenotazione = nuovo_codice;
         END WHILE;
-        
-        SELECT COUNT(*) INTO codice_esistente 
-        FROM prenotazioni 
-        WHERE codice_prenotazione = nuovo_codice;
-    END WHILE;
-END //
+END//
+
 
 -- Funzione per calcolare posti disponibili in un periodo
 DROP FUNCTION IF EXISTS posti_disponibili//
@@ -248,9 +258,10 @@ JOIN parcheggi p ON pr.parcheggio_id = p.id
 WHERE pr.stato = 'attiva';
 
 -- ============================================
--- GRANT PERMISSIONS per lamp_user
+-- GRANT PERMISSIONS per parking_user
 -- ============================================
-GRANT ALL PRIVILEGES ON parcheggi_db.* TO 'lamp_user'@'%';
+CREATE USER 'parking_user'@localhost IDENTIFIED BY 'parkingpassword';
+GRANT ALL PRIVILEGES ON parking_db.* TO 'parking_user'@'%';
 FLUSH PRIVILEGES;
 
 -- Messaggio finale
