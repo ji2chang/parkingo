@@ -1,25 +1,34 @@
-import { Routes, Route } from 'react-router-dom'
-import './App.css'
-import Header from './components/Header'
-import Footer from './components/Footer'
-import Home from './pages/Home'
-import ParkingList from './pages/ParkingList'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { MainLayout } from './components/MainLayout'
+import { ToastProvider } from './hooks/useToast'
+import { BookingProvider } from './hooks/useBooking'
+import { HomePage } from './pages/home'
+import { SearchPage } from './pages/SearchPage'
+import { MapPage } from './pages/MapPage'
+import { BookingPage } from './pages/BookingPage'
+import { ConfirmationPage } from './pages/ConfirmationPage'
+import { ManagePage } from './pages/ManagePage'
+import { AnalyticsPage } from './pages/AnalyticsPage'
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
-
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/parkings" element={<ParkingList />} />
-        </Routes>
-      </main>
-
-      <Footer />
-    </div>
+    <ToastProvider>
+      <BookingProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<MainLayout />}>
+              <Route index element={<HomePage />} />
+              <Route path="search" element={<SearchPage />} />
+              <Route path="map" element={<MapPage />} />
+              <Route path="booking/:parkingId" element={<BookingPage />} />
+              <Route path="confirmation/:code" element={<ConfirmationPage />} />
+              <Route path="manage/:code" element={<ManagePage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </BookingProvider>
+    </ToastProvider>
   )
 }
-
-export default App
