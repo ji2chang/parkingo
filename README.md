@@ -50,3 +50,43 @@ Il database parking_db è organizzato in questo modo:
 3. Avvia i servizi con il comando:
    docker compose up -d
 4. Puoi trovare le API all'indirizzo: http://localhost:9080
+
+## Come sono gli api?
+ritornano dei json di formato
+{
+   success : false,
+   data : {
+      att1 : "123"
+   }
+}
+
+## 🅿️ Parcheggi
+
+### Endpoint Parkings
+| Metodo | Endpoint                         | Descrizione                  | Parametri / Path                                                                                                                       |
+|--------|----------------------------------|------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| GET    | `/api/parkings`                  | Lista parcheggi con filtri   | `?citta=`, `?lat=`, `?lng=`, `?data=`,`?raggio=`, `?orario_apertura=`, `?orario_chiusura=`, `?al_chiuso=`, `?elettrico=`, `?disabili=` |
+| GET    | `/api/parkings/:id`              | Dettaglio singolo parcheggio | `id` nel path                                                                                                                          |
+| GET    | `/api/parkings/:id/availability` | Disponibilità slot orari     | `?data=`, `?orario_apertura=`, `?orario_chuisura=`                                                                                     |
+
+---
+
+## 📅 Prenotazioni
+
+### Endpoint Bookings
+| Metodo | Endpoint              | Descrizione                      | Body / Params                                                                           |
+|--------|-----------------------|----------------------------------|-----------------------------------------------------------------------------------------|
+| POST   | `/api/bookings`       | Crea prenotazione                | `{ parcheggio_id, data_inizio, data_fine, targa, nome, cognome, email, telefono, note}` |
+| GET    | `/api/bookings/:code` | Recupera prenotazione per codice | `code` nel path                                                                         |
+| DELETE | `/api/bookings/:code` | Cancella prenotazione            | `code` nel path                                                                         |
+| PATCH  | `/api/bookings/:code` | Modifica prenotazione            | `{ data_inizio, data_fine }`                                                            |
+
+---
+
+## 📊 Analytics
+
+### Endpoint Analytics
+| Metodo | Endpoint                 | Descrizione             | Parametri |
+|--------|--------------------------|-------------------------|-----------|
+| GET    | `/api/analytics`         | Dati statistici globali |           |
+| GET    | `/api/analytics/heatmap` | Dati heatmap calendario |           |

@@ -1,6 +1,6 @@
 <?php
 namespace parkingo\Utils;
-
+use PDO;
 class Connection {
     private static $pdo = null;
 
