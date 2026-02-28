@@ -23,7 +23,7 @@ class ParcheggioController {
 
         $payload = json_encode([
             'success' => true,
-            'data'    => array_map(fn($p) => $p->toArray(), $parcheggi)
+            'data'    => $parcheggi
         ]);
 
         $response->getBody()->write($payload);
@@ -52,7 +52,7 @@ class ParcheggioController {
 
         $payload = json_encode([
             'success' => true,
-            'data'    => $parcheggio->toArray()
+            'data'    => $parcheggio
         ]);
 
         $response->getBody()->write($payload);
@@ -83,7 +83,22 @@ class ParcheggioController {
 
         $payload = json_encode([
             'success' => true,
-            'data'    => $disponibilita->toArray()
+            'data'    => $disponibilita
+        ]);
+
+        $response->getBody()->write($payload);
+        return $response
+            ->withStatus(200)
+            ->withHeader('Content-Type', 'application/json');
+    }
+    // GET /api/parkings/cities
+    public function getCitta(Request $request, Response $response, array $args): Response
+    {
+        $citta = $this->repository->ottieniTutteLeCitta();
+
+        $payload = json_encode([
+            'success' => true,
+            'data'    => $citta
         ]);
 
         $response->getBody()->write($payload);

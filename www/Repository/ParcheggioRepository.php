@@ -93,4 +93,9 @@ class ParcheggioRepository {
 
         return new Parcheggio($row);
     }
+    public function ottieniTutteLeCitta(): array
+    {
+        $stmt = $this->db->query('SELECT DISTINCT citta FROM parcheggi ORDER BY citta ASC');
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
 }
