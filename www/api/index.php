@@ -1,30 +1,37 @@
 <?php
-
-require '../vendor/autoload.php';
+header("Access-Control-Allow-Origin: http://localhost:5173");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Allow-Credentials: true");
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
-use parkingo\Controller\PrenotazioneController;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
+
+require '../vendor/autoload.php';
+
 $app = AppFactory::create();
+
+// 1. Set Base Path FIRST
 $app->setBasePath('/api');
 
+// 2. Add Routing Middleware SECOND
 $app->addRoutingMiddleware();
-$errorMiddleware = $app->addErrorMiddleware(true, true, true);
-$app->add(function ($request, $handler) {
-    $response = $handler->handle($request);
 
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', 'http://localhost:9080')
-        ->withHeader('Access-Control-Allow-Origin', 'http://localhost:8080')
-        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
-        ->withHeader('Access-Control-Allow-Credentials', 'true');
+// 3. Add Body Parsing (helpful for POST)
+$app->addBodyParsingMiddleware();
+
+// 5. Handle OPTIONS requests for all routes
+$app->options('/{routes:.+}', function (Request $request, Response $response) {
+    return $response;
 });
 
-// Gestione preflight OPTIONS
+// 6. Define/Require your routes
 require __DIR__ . '/routesParcheggio.php';
 require __DIR__ . '/routesPrenotazione.php';
 
+// 7. Error Middleware (Keep at the bottom)
+$app->addErrorMiddleware(true, true, true);
 
 $app->run();

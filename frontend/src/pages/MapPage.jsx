@@ -17,7 +17,7 @@ const TILE_ATTR =
 
 /** Build a colored SVG pin icon based on availability ratio */
 function makeParkingIcon(available, total) {
-  const ratio = available / total
+  const ratio = total > 0 ? available / total : 1
   const color = ratio > 0.5 ? '#22c55e' : ratio > 0.2 ? '#f59e0b' : '#ef4444'
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="38" height="48" viewBox="0 0 38 48">
     <filter id="s"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.4)"/></filter>
@@ -37,7 +37,9 @@ function makeParkingIcon(available, total) {
 
 /** Inline popup HTML — no React rendering needed */
 function makePopupHtml(parking) {
-  const ratio = parking.availableSpots / parking.totalSpots
+  const total = parking.totalSpots ?? 0
+  const available = parking.availableSpots ?? 0
+  const ratio = total > 0 ? available / total : 1
   const badgeColor = ratio > 0.5 ? '#22c55e' : ratio > 0.2 ? '#f59e0b' : '#ef4444'
   return `
     <div style="min-width:210px;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#f1f5f9;background:#1e293b;border-radius:16px;padding:0;overflow:hidden">
@@ -45,13 +47,13 @@ function makePopupHtml(parking) {
         <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#f1f5f9">${parking.name}</p>
         <p style="margin:0 0 8px;font-size:12px;color:#94a3b8">${parking.address}, ${parking.city}</p>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px">
-          <span style="font-size:18px;font-weight:800;color:#818cf8">${formatCurrency(parking.pricePerHour)}<span style="font-size:11px;font-weight:400;color:#94a3b8">/ora</span></span>
+          <span style="font-size:18px;font-weight:800;color:#818cf8">${formatCurrency(parking.pricePerHour ?? 0)}<span style="font-size:11px;font-weight:400;color:#94a3b8">/ora</span></span>
           <span style="font-size:11px;font-weight:600;color:${badgeColor};background:${badgeColor}22;border-radius:99px;padding:3px 9px">
-            🚗 ${parking.availableSpots}/${parking.totalSpots}
+            🚗 ${available}/${total}
           </span>
         </div>
         <div style="display:flex;align-items:center;gap:4px;font-size:12px;color:#f59e0b;margin-bottom:12px">
-          ★ ${parking.rating.toFixed(1)}
+          ★ ${typeof parking.rating === 'number' ? parking.rating.toFixed(1) : '-'}
         </div>
       </div>
       <button
@@ -63,6 +65,31 @@ function makePopupHtml(parking) {
         Prenota ora →
       </button>
     </div>`
+}
+
+/**
+ * Normalize parking object returned by the API into the shape used by the UI
+ */
+function normalizeParking(p) {
+  return {
+    id: p.id?.toString(),
+    name: p.nome ?? p.name ?? 'Parcheggio',
+    address: p.indirizzo ?? p.address ?? '',
+    city: p.citta ?? p.city ?? '',
+    cap: p.cap ?? undefined,
+    totalSpots: p.posti_totali ?? p.totalSpots ?? 0,
+    availableSpots: p.posti_disponibili ?? p.availableSpots ?? 0,
+    pricePerHour: p.tariffa_oraria ?? p.pricePerHour ?? 0,
+    openingTime: p.orario_apertura ?? p.openingTime ?? null,
+    closingTime: p.orario_chiusura ?? p.closingTime ?? null,
+    open24h: p.aperto_24h ?? p.open24h ?? false,
+    description: p.descrizione ?? p.description ?? '',
+    lat: typeof p.lat === 'number' ? p.lat : (typeof p.latitude === 'number' ? p.latitude : CENTER[0]),
+    lng: typeof p.lng === 'number' ? p.lng : (typeof p.longitude === 'number' ? p.longitude : CENTER[1]),
+    rating: typeof p.rating === 'number' ? p.rating : undefined,
+    amenities: p.servizi ?? p.amenities ?? [],
+    images: p.images ?? [],
+  }
 }
 
 export function MapPage() {
@@ -77,7 +104,13 @@ export function MapPage() {
   // Carica parcheggi dall'API al mount
   useEffect(() => {
     getParkings()
-      .then((data) => setAllParkings(Array.isArray(data) ? data : []))
+      .then((payload) => {
+        // API returns { success: boolean, data: [...] }
+        const list = Array.isArray(payload)
+          ? payload
+          : payload?.data ?? []
+        setAllParkings(list.map(normalizeParking))
+      })
       .catch(() => setAllParkings([]))
   }, [])
 
@@ -85,10 +118,10 @@ export function MapPage() {
   const filtered = useMemo(
     () =>
       allParkings.filter((p) => {
-        if (filters.maxPrice && p.prezzo_orario > filters.maxPrice) return false
+        if (filters.maxPrice && (p.pricePerHour ?? 0) > filters.maxPrice) return false
         if (
           filters.amenities?.length > 0 &&
-          !filters.amenities.every((a) => p.servizi?.includes(a))
+          !filters.amenities.every((a) => (p.amenities ?? []).includes(a))
         )
           return false
         return true
@@ -137,23 +170,22 @@ export function MapPage() {
     const map = mapRef.current
     if (!map) return
 
-    // Remove old markers
-    markersRef.current.forEach((m) => m.remove())
-    markersRef.current = []
+    // Use a LayerGroup for markers
+    if (!map._markerLayer) {
+      map._markerLayer = L.layerGroup().addTo(map)
+    }
+    map._markerLayer.clearLayers()
 
-    // Add new markers
     filtered.forEach((parking) => {
       const marker = L.marker([parking.lat, parking.lng], {
-        icon: makeParkingIcon(parking.availableSpots, parking.totalSpots),
+        icon: makeParkingIcon(parking.availableSpots ?? 0, parking.totalSpots ?? 0),
       })
-        .addTo(map)
         .bindPopup(makePopupHtml(parking), {
           maxWidth: 260,
           className: 'parkly-popup',
         })
         .on('click', () => setSelected(parking))
-
-      markersRef.current.push(marker)
+      map._markerLayer.addLayer(marker)
     })
   }, [filtered])
 
@@ -162,7 +194,7 @@ export function MapPage() {
     mapRef.current?.setView(CENTER, ZOOM)
   }
 
-  const ratio = selected ? selected.availableSpots / selected.totalSpots : 1
+  const ratio = selected ? (selected.availableSpots ?? 0) / (selected.totalSpots ?? 1) : 1
   const availVariant = ratio > 0.5 ? 'success' : ratio > 0.2 ? 'warning' : 'danger'
 
   return (
@@ -226,14 +258,14 @@ export function MapPage() {
               <h3 className="font-semibold text-white text-lg">{selected.name}</h3>
               <p className="text-sm text-white/60 flex items-center gap-1 mt-0.5">
                 <MapPin className="h-3 w-3 flex-shrink-0" />
-                {selected.address}, {selected.city}
+                {selected.address}{selected.address && selected.city ? ', ' : ''}{selected.city}
               </p>
               <div className="flex items-center gap-1 text-warning text-sm mt-1">
                 <Star className="h-3.5 w-3.5 fill-warning" />
-                {selected.rating.toFixed(1)}
+                {typeof selected.rating === 'number' ? selected.rating.toFixed(1) : '-'}
               </div>
               <div className="flex gap-2 mt-2 flex-wrap">
-                {selected.amenities.map((a) => (
+                {(selected.amenities ?? []).map((a) => (
                   <Badge key={a}>{a}</Badge>
                 ))}
               </div>
@@ -241,12 +273,12 @@ export function MapPage() {
             <div className="flex flex-col gap-3 items-end flex-shrink-0">
               <div className="text-right">
                 <p className="text-2xl font-bold text-white">
-                  {formatCurrency(selected.pricePerHour)}
+                  {formatCurrency(selected.pricePerHour ?? 0)}
                   <span className="text-sm font-normal text-white/50">/ora</span>
                 </p>
                 <Badge variant={availVariant} className="mt-1">
                   <Car className="h-3 w-3 mr-1 inline" />
-                  {selected.availableSpots}/{selected.totalSpots} posti
+                  {selected.availableSpots ?? 0}/{selected.totalSpots ?? 0} posti
                 </Badge>
               </div>
               <div className="flex gap-2">

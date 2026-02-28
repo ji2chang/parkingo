@@ -31,14 +31,14 @@ export function SearchPage() {
         if (c) params.citta = c
         if (mp) params.prezzo_max = parseFloat(mp)
         if (q) params.query = q
-        // amenities come array: al_chiuso, elettrico, disabili
         am.forEach((a) => {
           if (a === 'Coperto') params.al_chiuso = true
           if (a === 'Colonnine EV') params.elettrico = true
           if (a === 'Disabili') params.disabili = true
         })
-        const data = await getParkings(params)
-        setResults(Array.isArray(data) ? data : [])
+        const payload = await getParkings(params)
+        const list = Array.isArray(payload) ? payload : payload?.data ?? []
+        setResults(list.map(normalizeParking))
       } catch (err) {
         showToast({ type: 'danger', title: 'Errore', description: err.message })
         setResults([])
@@ -230,4 +230,29 @@ export function SearchPage() {
       </div>
     </div>
   )
+}
+
+/**
+ * Normalize parking object returned by the API into the shape used by the UI
+ */
+function normalizeParking(p) {
+  return {
+    id: p.id?.toString(),
+    name: p.nome ?? p.name ?? 'Parcheggio',
+    address: p.indirizzo ?? p.address ?? '',
+    city: p.citta ?? p.city ?? '',
+    cap: p.cap ?? undefined,
+    totalSpots: p.posti_totali ?? p.totalSpots ?? 0,
+    availableSpots: p.posti_disponibili ?? p.availableSpots ?? 0,
+    pricePerHour: p.tariffa_oraria ?? p.pricePerHour ?? 0,
+    openingTime: p.orario_apertura ?? p.openingTime ?? null,
+    closingTime: p.orario_chiusura ?? p.closingTime ?? null,
+    open24h: p.aperto_24h ?? p.open24h ?? false,
+    description: p.descrizione ?? p.description ?? '',
+    lat: typeof p.lat === 'number' ? p.lat : (typeof p.latitude === 'number' ? p.latitude : null),
+    lng: typeof p.lng === 'number' ? p.lng : (typeof p.longitude === 'number' ? p.longitude : null),
+    rating: typeof p.rating === 'number' ? p.rating : undefined,
+    amenities: p.servizi ?? p.amenities ?? [],
+    images: p.images ?? [],
+  }
 }

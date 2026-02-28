@@ -2,37 +2,45 @@
 namespace parkingo\Entity;
 use ArrayAccess;
 
-class Parcheggio implements \ArrayAccess
+class Prenotazione implements \ArrayAccess
 {
     use ArrayAccessible;
+
     public int $id;
+    public string $codice_prenotazione;
+    public int $parcheggio_id;
+
+    // Dati utente
     public string $nome;
-    public string $indirizzo;
-    public string $citta;
-    public ?string $cap;
-    public int $posti_totali;
-    public float $tariffa_oraria;
-    public string $orario_apertura;
-    public string $orario_chiusura;
-    public bool $aperto_24h;
-    public ?string $descrizione;
+    public string $cognome;
+    public string $targa;
+    public ?string $email;
+    public ?string $telefono;
+
+    // Periodo prenotazione
+    public string $data_inizio; // DATETIME
+    public string $data_fine;   // DATETIME
+
+    // Stato prenotazione (attiva, annullata, scaduta, completata)
+    public string $stato;
+
+    // Metadati
+    public ?float $importo_totale;
+    public ?string $note;
     public string $created_at;
     public string $updated_at;
-
-    // Posizione geografica
-    public ?float $lat;
-    public ?float $lng;
-
-    // Caratteristiche
-    public bool $al_chiuso;
-    public bool $elettrico;
-    public bool $disabili;
+    public ?string $annullata_at;
 
     public function __construct(array $data = [])
     {
         foreach ($data as $key => $value) {
             if (property_exists($this, $key)) {
-                $this->$key = $value;
+                // Cast per l'importo se presente, essendo DECIMAL nel DB
+                if ($key === 'importo_totale' && $value !== null) {
+                    $this->$key = (float)$value;
+                } else {
+                    $this->$key = $value;
+                }
             }
         }
     }
