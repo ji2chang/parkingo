@@ -4,24 +4,24 @@ namespace parkingo\Entity;
 
 trait ArrayAccessible
 {
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return property_exists($this, $offset);
     }
 
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
-        return $this->$offset;
+        return $this->$offset ?? null;
     }
 
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         if (property_exists($this, $offset)) {
             $this->$offset = $value;
         }
     }
 
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
         if (property_exists($this, $offset)) {
             $this->$offset = null;
@@ -32,5 +32,4 @@ trait ArrayAccessible
     {
         return get_object_vars($this);
     }
-
 }
