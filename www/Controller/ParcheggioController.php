@@ -38,7 +38,7 @@ class ParcheggioController {
         $id = (int) $args['id'];
         $parcheggio = $this->repository->ottieniParcheggioById($id);
 
-        if (empty($parcheggio)) {
+        if ($parcheggio === null) {
             $payload = json_encode([
                 'success' => false,
                 'message' => 'Parcheggio non trovato'

@@ -2,7 +2,6 @@
 
 namespace parkingo\Controller;
 
-use Exception;
 use parkingo\Entity\Prenotazione;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -55,12 +54,21 @@ class PrenotazioneController
 
             $payload = json_encode([
                 'success' => true,
-                'data' => $result->toArray()
+                'data' => $result->toResponse()
             ]);
 
             $response = $response->withStatus(201);
 
-        } catch (Exception $e) {
+        } catch (\PDOException $e) {
+            // SQLSTATE 45000 = trigger che blocca l'inserimento per mancanza di posti
+            $statusCode = ($e->getCode() === '45000') ? 409 : 500;
+            $payload = json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+            $response = $response->withStatus($statusCode);
+
+        } catch (\Exception $e) {
 
             $payload = json_encode([
                 'success' => false,
@@ -96,7 +104,7 @@ class PrenotazioneController
                 $response = $response->withStatus(404);
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
 
             $payload = json_encode([
                 'success' => false,
@@ -113,7 +121,9 @@ class PrenotazioneController
 
     public function updatePrenotazione(Request $request, Response $response, array $args): Response
     {
-        $params = $request->getParsedBody();
+        $codice = $args['code'];
+        $params = $request->getParsedBody() ?? [];
+        $params['codice_prenotazione'] = $codice;
         $prenotazione = new Prenotazione($params);
 
         try {
@@ -133,7 +143,7 @@ class PrenotazioneController
                 $response = $response->withStatus(404);
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
 
             $payload = json_encode([
                 'success' => false,

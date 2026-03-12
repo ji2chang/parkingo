@@ -1,6 +1,7 @@
 <?php
 namespace parkingo\Utils;
 use PDO;
+use \PDOException;
 class Connection {
     private static $pdo = null;
 
@@ -16,6 +17,8 @@ class Connection {
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                     PDO::ATTR_EMULATE_PREPARES   => false,
                 ]);
+                // Forza collation unicode per allinearsi alla tabella prenotazioni
+                self::$pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
             } catch (PDOException $e) {
                 die("Errore connessione: " . $e->getMessage());
             }
