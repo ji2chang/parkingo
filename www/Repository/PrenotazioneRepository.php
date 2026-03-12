@@ -83,35 +83,67 @@ class PrenotazioneRepository {
 
 
     /**
-     * Aggiorna lo stato o i dettagli di una prenotazione.
-     * Utilizza il codice_prenotazione come identificativo univoco.
+     * Aggiorna le date di una prenotazione (data_inizio, data_fine).
+     * Ricalcola importo_totale in base alla nuova durata.
      */
     public function update(Prenotazione $data): bool {
+        // Ricalcolo importo se vengono passate entrambe le date
+        $extraSet = '';
+        $binds = [':codice_prenotazione' => $data->codice_prenotazione];
+
+        if ($data->data_inizio && $data->data_fine) {
+            // Recupera tariffa oraria
+            $stmt = $this->pdo->prepare("SELECT tariffa_oraria FROM parcheggi p JOIN prenotazioni pr ON pr.parcheggio_id = p.id WHERE pr.codice_prenotazione = :codice");
+            $stmt->execute([':codice' => $data->codice_prenotazione]);
+            $tariffa = (float) $stmt->fetchColumn();
+
+            $inizio  = new DateTime($data->data_inizio);
+            $fine    = new DateTime($data->data_fine);
+            $diffOre = $inizio->diff($fine)->h + ($inizio->diff($fine)->days * 24);
+            $importo = $diffOre * $tariffa;
+
+            $extraSet = "data_inizio = :data_inizio, data_fine = :data_fine, importo_totale = :importo_totale,";
+            $binds[':data_inizio']    = $data->data_inizio;
+            $binds[':data_fine']      = $data->data_fine;
+            $binds[':importo_totale'] = $importo;
+        }
+
         $sql = "UPDATE prenotazioni 
-                SET email = :email, 
-                    telefono = :telefono, 
-                    stato = :stato, 
-                    note = :note 
-                WHERE codice_prenotazione = :codice_prenotazione";
+                SET {$extraSet}
+                    stato = stato
+                WHERE codice_prenotazione = :codice_prenotazione
+                  AND stato = 'attiva'";
+
+        // Se non ci sono campi da aggiornare oltre la data, aggiorna solo le date
+        if (empty($extraSet)) {
+            return false;
+        }
+
+        // Rimuovi la virgola finale prima di WHERE
+        $sql = "UPDATE prenotazioni 
+                SET data_inizio = :data_inizio,
+                    data_fine   = :data_fine,
+                    importo_totale = :importo_totale
+                WHERE codice_prenotazione = :codice_prenotazione
+                  AND stato = 'attiva'";
+
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($data->toArray());
+        $stmt->execute($binds);
         return $stmt->rowCount() > 0;
     }
 
     /**
-     * Elimina una prenotazione.
+     * Soft delete: imposta stato='annullata'.
      */
     public function delete(string $codice): bool
     {
-        $sql = "DELETE FROM prenotazioni 
-                WHERE codice_prenotazione = :codice";
+        $sql = "UPDATE prenotazioni 
+                SET stato = 'annullata' 
+                WHERE codice_prenotazione = :codice
+                  AND stato = 'attiva'";
 
         $stmt = $this->pdo->prepare($sql);
-
-        $stmt->execute([
-            'codice' => $codice
-        ]);
-
+        $stmt->execute(['codice' => $codice]);
         return $stmt->rowCount() > 0;
     }
 }

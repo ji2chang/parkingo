@@ -16,6 +16,7 @@ services:
     volumes:
       - ./www:/var/www/html
       - ./apache-config:/etc/apache2/sites-available
+      - ./apache-config/certs:/etc/ssl/mkcert:ro
     networks:
       - parking_network
     depends_on:

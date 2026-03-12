@@ -1,6 +1,7 @@
 <?php
 
-use parkingo\Entity\Parcheggio;
+namespace parkingo\Repository;
+
 use parkingo\Utils\Connection;
 use PDO;
 
@@ -27,7 +28,7 @@ class AnalyticsRepository {
                     (SELECT AVG(posti_totali) FROM parcheggi) as media_posti_per_struttura
                 FROM prenotazioni";
 
-        $stmt = $this->db->query($sql);
+        $stmt = $this->pdo->query($sql);
         $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
         // Calcolo tasso di conversione/completamento
@@ -54,7 +55,7 @@ class AnalyticsRepository {
                 GROUP BY giorno_settimana, ora_giorno
                 ORDER BY giorno_settimana, ora_giorno";
 
-        $stmt = $this->db->query($sql);
+        $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -64,7 +65,7 @@ class AnalyticsRepository {
      */
     public function getParkingPerformance() {
         $sql = "SELECT * FROM statistiche_parcheggi ORDER BY ricavi_totali DESC";
-        $stmt = $this->db->query($sql);
+        $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

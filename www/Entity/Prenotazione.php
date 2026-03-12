@@ -1,6 +1,5 @@
 <?php
 namespace parkingo\Entity;
-use ArrayAccess;
 
 class Prenotazione implements \ArrayAccess
 {
@@ -43,5 +42,38 @@ class Prenotazione implements \ArrayAccess
                 }
             }
         }
+    }
+
+    public function toArray(): array
+    {
+        return [
+            ':codice_prenotazione' => $this->codice_prenotazione,
+            ':parcheggio_id'       => $this->parcheggio_id,
+            ':nome'                => $this->nome,
+            ':cognome'             => $this->cognome,
+            ':targa'               => $this->targa,
+            ':email'               => $this->email,
+            ':telefono'            => $this->telefono,
+            ':inizio'              => $this->data_inizio,
+            ':fine'                => $this->data_fine,
+            ':importo_totale'      => $this->importo_totale,
+        ];
+    }
+
+    public function toResponse(): array
+    {
+        return [
+            'codice_prenotazione' => $this->codice_prenotazione,
+            'parcheggio_id'       => $this->parcheggio_id,
+            'nome'                => $this->nome,
+            'cognome'             => $this->cognome,
+            'targa'               => $this->targa,
+            'email'               => $this->email,
+            'telefono'            => $this->telefono,
+            'data_inizio'         => $this->data_inizio,
+            'data_fine'           => $this->data_fine,
+            'importo_totale'      => $this->importo_totale,
+            'stato'               => $this->stato,
+        ];
     }
 }

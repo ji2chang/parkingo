@@ -1,0 +1,14 @@
+Options -Indexes
+DirectorySlash Off
+RewriteEngine On
+
+# --- API: tutto /api/* va a api/index.php (senza redirect 301) ---
+RewriteCond %{REQUEST_URI} ^/api
+RewriteRule ^(.*)$ api/index.php [QSA,L,NS]
+
+# --- SPA: le risorse statiche vengono servite direttamente ---
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# --- SPA: tutto il resto va a index.php (React Router) ---
+RewriteRule ^ index.php [QSA,L]
