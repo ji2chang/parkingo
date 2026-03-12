@@ -30,7 +30,7 @@ export function ParkingCard({ parking, index = 0 }) {
         </div>
         <div className="flex items-center gap-1 text-warning text-sm font-semibold flex-shrink-0">
           <Star className="h-4 w-4 fill-warning" />
-          {parking.rating.toFixed(1)}
+          {typeof parking.rating === 'number' ? parking.rating.toFixed(1) : '-'}
         </div>
       </div>
 

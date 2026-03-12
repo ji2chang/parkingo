@@ -1,53 +1,37 @@
 <?php
-
-require '../vendor/autoload.php';
+header("Access-Control-Allow-Origin: http://localhost:5173");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Allow-Credentials: true");
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
-use parkingo\Controller\PrenotazioneController;
-use parkingo\Controller\AnalyticsController;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
+
+require '../vendor/autoload.php';
 
 $app = AppFactory::create();
+
+// 1. Set Base Path FIRST
 $app->setBasePath('/api');
 
-$app->addBodyParsingMiddleware();
+// 2. Add Routing Middleware SECOND
 $app->addRoutingMiddleware();
-$errorMiddleware = $app->addErrorMiddleware(true, true, true);
 
-// Middleware CORS
-$app->add(function ($request, $handler) {
-    $allowedOrigins = [
-        'http://localhost:5173',
-        'http://localhost:9080',
-        'http://localhost:8080',
-        'https://localhost:9443',
-        'https://prova:9443',
-    ];
-    $origin = $request->getHeaderLine('Origin');
-    $allowOrigin = in_array($origin, $allowedOrigins) ? $origin : $allowedOrigins[0];
+// 3. Add Body Parsing (helpful for POST)
+$app->addBodyParsingMiddleware();
 
-    // Gestione preflight OPTIONS
-    if ($request->getMethod() === 'OPTIONS') {
-        $response = new \Slim\Psr7\Response();
-        return $response
-            ->withHeader('Access-Control-Allow-Origin', $allowOrigin)
-            ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
-            ->withHeader('Access-Control-Allow-Credentials', 'true')
-            ->withStatus(204);
-    }
-
-    $response = $handler->handle($request);
-
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', $allowOrigin)
-        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
-        ->withHeader('Access-Control-Allow-Credentials', 'true');
+// 5. Handle OPTIONS requests for all routes
+$app->options('/{routes:.+}', function (Request $request, Response $response) {
+    return $response;
 });
 
+// 6. Define/Require your routes
 require __DIR__ . '/routesParcheggio.php';
 require __DIR__ . '/routesPrenotazione.php';
+
+// 7. Error Middleware (Keep at the bottom)
+$app->addErrorMiddleware(true, true, true);
 
 $app->run();
