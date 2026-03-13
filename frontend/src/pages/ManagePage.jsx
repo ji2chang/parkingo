@@ -8,6 +8,7 @@ import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { formatCurrency, formatDateRange } from '../utils/format'
 import { useBooking } from '../hooks/useBooking'
+import { getParkingById } from '../services/api'
 import { useToast } from '../hooks/useToast'
 
 export function ManagePage() {
@@ -21,9 +22,23 @@ export function ManagePage() {
 
   useEffect(() => {
     if (!code) return
-    fetchBooking(code).then((result) => {
-      if (result) setBooking(result)
-      else setNotFound(true)
+    fetchBooking(code).then(async (result) => {
+      if (result) {
+        // ensure parking details (extra safety if API didn't include it)
+        if ((!result.parking && !result.parcheggio) && (result.parcheggio_id || result.parcheggioId || result.parking_id)) {
+          const pid = result.parcheggio_id ?? result.parcheggioId ?? result.parking_id
+          try {
+            const p = await getParkingById(pid)
+            if (p) {
+              result.parking = p
+              result.parcheggio = p
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
+        setBooking(result)
+      } else setNotFound(true)
     })
   }, [code, fetchBooking])
 

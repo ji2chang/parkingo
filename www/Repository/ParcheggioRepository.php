@@ -37,9 +37,9 @@ class ParcheggioRepository {
             ':indirizzo'       => $parcheggio->indirizzo,
             ':citta'           => $parcheggio->citta,
             ':cap'             => $parcheggio->cap,
-            ':lat'             => $parcheggio->lat,    // Aggiunto
-            ':lng'             => $parcheggio->lng,    // Aggiunto
-            ':raggio'          => $parcheggio->raggio, // Aggiunto
+            ':lat'             => $parcheggio->lat,    
+            ':lng'             => $parcheggio->lng,    
+            ':raggio'          => $parcheggio->raggio, 
             ':posti_totali'    => $parcheggio->posti_totali,
             ':tariffa_oraria'  => $parcheggio->tariffa_oraria,
             ':orario_apertura' => $parcheggio->orario_apertura,
@@ -56,17 +56,28 @@ class ParcheggioRepository {
         return $parcheggio;
     }
 
-    public function ottieniTuttiParcheggi(): array {
-        $sql = "SELECT * FROM parcheggi";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute();
+    public function ottieniTuttiParcheggi(array $params = []): array
+    {
+        $params = (array) $params;
 
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $parcheggi = [];
+        $sql    = "SELECT * FROM parcheggi WHERE 1=1";
+        $binds  = [];
 
-        foreach ($rows as $row) {
-            // Assicurati che il costruttore di Parcheggio accetti l'array $row
-            $parcheggi[] = new Parcheggio($row);
+        if (!empty($params['citta'])) {
+            $sql .= " AND citta = :citta";
+            $binds[':citta'] = $params['citta'];
+        }
+        if (isset($params['al_chiuso']) && $params['al_chiuso'] !== '') {
+            $sql .= " AND al_chiuso = :al_chiuso";
+            $binds[':al_chiuso'] = (int) $params['al_chiuso'];
+        }
+        if (isset($params['elettrico']) && $params['elettrico'] !== '') {
+            $sql .= " AND elettrico = :elettrico";
+            $binds[':elettrico'] = (int) $params['elettrico'];
+        }
+        if (isset($params['disabili']) && $params['disabili'] !== '') {
+            $sql .= " AND disabili = :disabili";
+            $binds[':disabili'] = (int) $params['disabili'];
         }
         if (!empty($params['prezzo_max'])) {
             $sql .= " AND tariffa_oraria <= :prezzo_max";
@@ -79,7 +90,7 @@ class ParcheggioRepository {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function ottieniParcheggioById(int $id): ?Parcheggio {
+    public function ottieniParcheggioById(int $id): ?array {
         $sql = "SELECT * FROM parcheggi WHERE id = :id LIMIT 1";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':id' => $id]);
@@ -105,7 +116,7 @@ class ParcheggioRepository {
             $data_inizio = $params['data_inizio'];
             $data_fine   = $params['data_fine'];
         } elseif (!empty($params['data'])) {
-            // Usa gli orari passati oppure quelli del parcheggio come default
+            
             $apertura  = $params['orario_apertura']  ?? $parcheggio['orario_apertura'];
             $chiusura  = $params['orario_chiusura']  ?? $parcheggio['orario_chiusura'];
             $data_inizio = $params['data'] . ' ' . $apertura;

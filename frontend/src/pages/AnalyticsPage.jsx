@@ -16,6 +16,7 @@ export function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    
     getAnalytics()
       .then((data) => {
         // Il backend restituisce { stats, prenotazioni, parcheggi_top }
@@ -24,7 +25,32 @@ export function AnalyticsPage() {
         setParkingUsage(data.parcheggi_top ?? data.parking_usage ?? [])
       })
       .catch(() => {
-        setStats({ totale: 0, attive: 0, cancellate: 0, spesa_totale: 0, costo_medio: 0 })
+        
+        try {
+          const stored = JSON.parse(localStorage.getItem('parkly_bookings') || '[]')
+          setBookings(stored || [])
+          
+          const totale = (stored || []).length
+          const cancellate = (stored || []).filter((b) => (b.stato === 'cancellata' || b.status === 'cancelled')).length
+          const attive = totale - cancellate
+          const spesa_totale = (stored || []).reduce((s, b) => s + (Number(b.importo ?? b.total ?? 0) || 0), 0)
+          const costo_medio = totale > 0 ? spesa_totale / totale : 0
+          setStats({ totale, attive, cancellate, spesa_totale, costo_medio, costo_medio_display: costo_medio })
+
+          // parking usage: raggruppa per nome parcheggio
+          const usageMap = {}
+          ;(stored || []).forEach((b) => {
+            const name = b.parcheggio?.nome ?? b.parking?.name ?? b.parcheggio_nome ?? 'Sconosciuto'
+            if (!usageMap[name]) usageMap[name] = { nome: name, prenotazioni: 0 }
+            usageMap[name].prenotazioni += 1
+          })
+          const usage = Object.values(usageMap).sort((a, z) => z.prenotazioni - a.prenotazioni)
+          setParkingUsage(usage)
+        } catch (e) {
+          setStats({ totale: 0, attive: 0, cancellate: 0, spesa_totale: 0, costo_medio: 0 })
+          setBookings([])
+          setParkingUsage([])
+        }
       })
       .finally(() => setLoading(false))
   }, [])

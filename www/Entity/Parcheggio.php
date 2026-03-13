@@ -2,7 +2,7 @@
 namespace parkingo\Entity;
 use ArrayAccess;
 
-class Parcheggio implements \ArrayAccess
+class Parcheggio implements ArrayAccess
 {
     use ArrayAccessible;
     public int $id;
@@ -22,6 +22,8 @@ class Parcheggio implements \ArrayAccess
     // Posizione geografica
     public ?float $lat;
     public ?float $lng;
+
+    public ?float $raggio;
 
     // Caratteristiche
     public bool $al_chiuso;

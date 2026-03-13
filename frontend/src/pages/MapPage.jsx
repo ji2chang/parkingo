@@ -67,9 +67,7 @@ function makePopupHtml(parking) {
     </div>`
 }
 
-/**
- * Normalize parking object returned by the API into the shape used by the UI
- */
+
 function normalizeParking(p) {
   return {
     id: p.id?.toString(),
@@ -78,7 +76,11 @@ function normalizeParking(p) {
     city: p.citta ?? p.city ?? '',
     cap: p.cap ?? undefined,
     totalSpots: p.posti_totali ?? p.totalSpots ?? 0,
-    availableSpots: p.posti_disponibili ?? p.availableSpots ?? 0,
+    // If API returns `posti_disponibili` as null significa che tutti i posti sono liberi
+    availableSpots:
+      (p.posti_disponibili !== null && p.posti_disponibili !== undefined)
+        ? p.posti_disponibili
+        : (p.availableSpots ?? p.posti_totali ?? p.totalSpots ?? 0),
     pricePerHour: p.tariffa_oraria ?? p.pricePerHour ?? 0,
     openingTime: p.orario_apertura ?? p.openingTime ?? null,
     closingTime: p.orario_chiusura ?? p.closingTime ?? null,

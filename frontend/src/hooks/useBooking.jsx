@@ -1,12 +1,31 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { createBooking, getBooking, cancelBooking as apiCancelBooking, updateBooking } from '../services/api'
+import { getParkingById } from '../services/api'
 
 const BookingContext = createContext(null)
 
 export function BookingProvider({ children }) {
+  const STORAGE_KEY = 'parkly_bookings'
+
+  const loadFromStorage = () => {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    } catch (e) {
+      return []
+    }
+  }
+
+  const saveToStorage = (list) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+    } catch (e) {
+      // ignore
+    }
+  }
+
   const [bookingDetails, setBookingDetails] = useState(null)
-  const [bookings, setBookings] = useState([])
+  const [bookings, setBookings] = useState(() => loadFromStorage())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -23,8 +42,9 @@ export function BookingProvider({ children }) {
       setBookingDetails(result)
       setBookings((prev) => {
         const exists = prev.find((b) => b.codice === result.codice)
-        if (exists) return prev.map((b) => (b.codice === result.codice ? result : b))
-        return [result, ...prev]
+        const next = exists ? prev.map((b) => (b.codice === result.codice ? result : b)) : [result, ...prev]
+        saveToStorage(next)
+        return next
       })
       return result
     } catch (err) {
@@ -45,11 +65,27 @@ export function BookingProvider({ children }) {
     setError(null)
     try {
       const result = await getBooking(code)
+      // Ensure booking contains parking details; if not, fetch them
+      if ((!result.parking && !result.parcheggio) && (result.parcheggio_id || result.parcheggioId || result.parking_id)) {
+        const pid = result.parcheggio_id ?? result.parcheggioId ?? result.parking_id
+        try {
+          const p = await getParkingById(pid)
+          if (p) {
+            // attach under both keys for compatibility
+            result.parking = p
+            result.parcheggio = p
+          }
+        } catch (e) {
+          // ignore parking fetch error
+        }
+      }
+
       setBookingDetails(result)
       setBookings((prev) => {
         const exists = prev.find((b) => b.codice === result.codice)
-        if (exists) return prev.map((b) => (b.codice === result.codice ? result : b))
-        return [result, ...prev]
+        const next = exists ? prev.map((b) => (b.codice === result.codice ? result : b)) : [result, ...prev]
+        saveToStorage(next)
+        return next
       })
       return result
     } catch (err) {
@@ -70,9 +106,11 @@ export function BookingProvider({ children }) {
     setError(null)
     try {
       await apiCancelBooking(code)
-      setBookings((prev) =>
-        prev.map((b) => (b.codice === code ? { ...b, stato: 'cancellata' } : b))
-      )
+      setBookings((prev) => {
+        const next = prev.map((b) => (b.codice === code ? { ...b, stato: 'cancellata' } : b))
+        saveToStorage(next)
+        return next
+      })
       return true
     } catch (err) {
       setError(err.message)
@@ -93,9 +131,11 @@ export function BookingProvider({ children }) {
     setError(null)
     try {
       const result = await updateBooking(code, body)
-      setBookings((prev) =>
-        prev.map((b) => (b.codice === code ? { ...b, ...result } : b))
-      )
+      setBookings((prev) => {
+        const next = prev.map((b) => (b.codice === code ? { ...b, ...result } : b))
+        saveToStorage(next)
+        return next
+      })
       return result
     } catch (err) {
       setError(err.message)

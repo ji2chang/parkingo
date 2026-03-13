@@ -52,9 +52,48 @@ class PrenotazioneController
         try {
             $result = $this->repository->create($prenotazione);
 
+           
+            $r = $result->toResponse();
+
+            $parRepo = new \parkingo\Repository\ParcheggioRepository();
+            $par = $parRepo->ottieniParcheggioById((int)$r['parcheggio_id']);
+
+            $payloadData = [
+
+                'codice' => $r['codice_prenotazione'] ?? $r['codice_prenotazione'] ?? null,
+                'codice_prenotazione' => $r['codice_prenotazione'] ?? null,
+
+                'nome' => $r['nome'] ?? null,
+                'cognome' => $r['cognome'] ?? null,
+                'targa' => $r['targa'] ?? null,
+                'email' => $r['email'] ?? null,
+                'telefono' => $r['telefono'] ?? null,
+                'customer' => [
+                    'firstName' => $r['nome'] ?? null,
+                    'lastName' => $r['cognome'] ?? null,
+                    'plate' => $r['targa'] ?? null,
+                    'email' => $r['email'] ?? null,
+                    'phone' => $r['telefono'] ?? null,
+                ],
+
+                // period / totals (both variants)
+                'data_inizio' => $r['data_inizio'] ?? null,
+                'data_fine' => $r['data_fine'] ?? null,
+                'period' => [
+                    'start' => $r['data_inizio'] ?? null,
+                    'end' => $r['data_fine'] ?? null,
+                ],
+                'importo' => $r['importo_totale'] ?? null,
+                'total' => $r['importo_totale'] ?? null,
+
+                // parcheggio / parking
+                'parcheggio' => $par ?: null,
+                'parking' => $par ?: null,
+            ];
+
             $payload = json_encode([
                 'success' => true,
-                'data' => $result->toResponse()
+                'data' => $payloadData
             ]);
 
             $response = $response->withStatus(201);

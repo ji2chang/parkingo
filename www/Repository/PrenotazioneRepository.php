@@ -77,7 +77,18 @@ class PrenotazioneRepository {
         if (!$ok){
             throw new Exception("Inserimento della prenotazione non riuscito");
         }
-        return $data;
+
+        // Recupera la riga appena inserita per restituire un oggetto completo
+        $stmt = $this->pdo->prepare("SELECT * FROM prenotazioni WHERE codice_prenotazione = :codice LIMIT 1");
+        $stmt->execute([':codice' => $codice]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            throw new Exception("Impossibile recuperare la prenotazione appena creata");
+        }
+
+        // Inizializza e restituisci un'istanza di Prenotazione popolata
+        return new Prenotazione($row);
     }
 
 

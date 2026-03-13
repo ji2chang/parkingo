@@ -1,16 +1,19 @@
 import axios from 'axios'
 
-const BASE_URL = 'http://localhost:9080' || ''
+
+const BASE_URL = import.meta.env.VITE_API_URL ?? ''
 
 const client = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 })
 
-// ─── Response interceptor: unwrap data or throw normalized error ───────────────
+
 client.interceptors.response.use(
-  (res) => res.data,
+  
+  (res) => res.data?.data ?? res.data,
   (err) => {
+   
     const message =
       err.response?.data?.message ||
       err.response?.data?.error ||
@@ -19,10 +22,6 @@ client.interceptors.response.use(
     return Promise.reject(new Error(message))
   }
 )
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  🅿️  PARKINGS
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * GET /api/parkings
@@ -65,9 +64,7 @@ export function getParkingAvailability(id, params = {}) {
   return client.get(`/api/parkings/${id}/availability`, { params })
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  📅  BOOKINGS
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 /**
  * POST /api/bookings
@@ -116,10 +113,6 @@ export function cancelBooking(code) {
 export function updateBooking(code, body) {
   return client.patch(`/api/bookings/${code}`, body)
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  📊  ANALYTICS
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * GET /api/analytics
