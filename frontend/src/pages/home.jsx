@@ -50,7 +50,7 @@ export function HomePage() {
           </span>
         </h1>
         <p className="max-w-xl text-lg text-white/60">
-          Parkly ti aiuta a trovare, prenotare e gestire il tuo parcheggio in pochi secondi.
+          parkingo ti aiuta a trovare, prenotare e gestire il tuo parcheggio in pochi secondi.
           Nessuna sorpresa, solo comodità.
         </p>
         <div className="flex gap-4 flex-wrap justify-center">

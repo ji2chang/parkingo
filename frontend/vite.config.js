@@ -6,7 +6,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://prova:9443',
+        // Proxy API requests to the backend running on the host at 9443 (HTTPS).
+        // Use localhost so the dev server can connect to the container's exposed port.
+        target: 'https://localhost:9443',
         changeOrigin: true,
         secure: false, // mkcert cert valido solo per "prova", non localhost
       },

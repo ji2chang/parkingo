@@ -25,7 +25,7 @@ export function Navbar() {
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30">
             P
           </span>
-          Parkly
+          parkingo
         </button>
 
         {/* Desktop nav */}

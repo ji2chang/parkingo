@@ -84,9 +84,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-white/40">
-            &copy; {new Date().getFullYear()} Smart Parking. Tutti i diritti riservati.
-          </p>
+          
           <p className="text-xs text-white/30">
             Built with React + Tailwind CSS
           </p>

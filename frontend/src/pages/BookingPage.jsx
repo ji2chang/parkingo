@@ -111,7 +111,8 @@ export function BookingPage() {
     } else {
       showToast({ type: 'danger', title: 'Errore', description: 'Impossibile completare la prenotazione.' })
     }
-  
+  }
+
   const availableSpots =
     (parking?.posti_disponibili !== null && parking?.posti_disponibili !== undefined)
       ? parking.posti_disponibili
@@ -255,5 +256,4 @@ export function BookingPage() {
       </div>
     </div>
   )
-}
 }

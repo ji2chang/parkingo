@@ -9,7 +9,6 @@ export function MainLayout() {
         <Outlet />
       </main>
       <footer className="text-center py-6 text-white/30 text-xs">
-        © {new Date().getFullYear()} Parkly · Tutti i diritti riservati
       </footer>
     </div>
   )
