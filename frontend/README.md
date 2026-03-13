@@ -1,4 +1,4 @@
-# Parkly — Sistema Prenotazione Parcheggi
+# Parkingo — Sistema Prenotazione Parcheggi
 
 Applicazione React 18 multi-pagina basata su Vite, Tailwind CSS e React Router v6 per prenotare e gestire parcheggi premium. L'interfaccia prende ispirazione da Airbnb, Stripe, Linear e Vercel, con animazioni Framer Motion, validazione realtime e toast contestuali.
 
@@ -44,8 +44,26 @@ Applicazione React 18 multi-pagina basata su Vite, Tailwind CSS e React Router v
 | RF-15 | Il gestore può aggiungere, modificare o rimuovere posti auto da un parcheggio. Ogni posto ha uno stato (`StatoPostoAuto`: libero, occupato, riservato). | Alta |
 | RF-16 | Il gestore può definire periodi di chiusura temporanea (`ChiusuraParcheggio`), che impediscono nuove prenotazioni nell'intervallo. | Media |
 | RF-17 | Il gestore può aggiornare le informazioni del parcheggio: nome, indirizzo, coordinate, capacità, tariffe, orari di apertura. | Alta |
- 
 
+## Requisiti Non Funzionali
+Il sistema deve trattare i dati personali degli utenti nel rispetto della normativa vigente sulla privacy (GDPR).da consentire modifiche, correzioni e aggiornamenti con il minimo impatto sulle parti non coinvolte.
+
+### Prestazioni
+Il sistema deve garantire tempi di risposta rapidi sia lato server che lato client, anche in presenza di carichi elevati e grandi volumi di dati.
+ 
+### Scalabilità
+I componenti del sistema devono poter essere scalati in modo indipendente per far fronte a variazioni del carico senza interruzione del servizio.
+ 
+### Manutenibilità
+Il sistema deve essere strutturato in modo da consentire modifiche, correzioni e aggiornamenti con il minimo impatto sulle parti non coinvolte.
+ 
+### Usabilità e Accessibilità
+L'interfaccia deve essere intuitiva, responsiva su tutti i dispositivi e accessibile.
+ 
+### Portabilità
+Il sistema deve poter essere installato e rilasciato su infrastrutture diverse in modo semplice, automatizzato e ripetibile.
+
+---
 
 ```bash
 npm install
