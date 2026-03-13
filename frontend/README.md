@@ -12,12 +12,40 @@ Applicazione React 18 multi-pagina basata su Vite, Tailwind CSS e React Router v
 - Axios + date-fns per API e gestione date
 - Lucide React per icone coerenti
 
-## Requisiti
+## Requisiti Funzionali
+ 
+### Ricerca e Mappa
+ 
+| ID | Descrizione | Priorità |
+|---|---|---|
+| RF-01 | L'utente può cercare parcheggi per posizione geografica (coordinate), filtrando per disponibilità, orario e altri criteri tramite `MapFilters`. | Alta |
+| RF-02 | I parcheggi disponibili sono visualizzati su una mappa interattiva (`MapPage`), con nome, posizione e stato occupazione. | Alta |
+| RF-03 | L'utente può accedere alla scheda di dettaglio del parcheggio (`ParkingInfoCard`) con capacità, orari, tariffe e disponibilità in tempo reale. | Alta |
+| RF-04 | Il sistema espone filtri avanzati (`MapFilters.jsx`): tipo di veicolo, orario arrivo/partenza, distanza, prezzo massimo. I filtri sono persistibili come ricerche salvate. | Media |
+| RF-05 | Gli utenti possono salvare configurazioni di ricerca frequenti (`useSavedSearches.js`) per riutilizzarle rapidamente. | Bassa |
+| RF-06 | Il sistema raggruppa i parcheggi per zona geografica (`ZoneCard.jsx`), permettendo una navigazione gerarchica. | Media |
+ 
+### Prenotazioni
+ 
+| ID | Descrizione | Priorità |
+|---|---|---|
+| RF-07 | L'utente può prenotare un posto auto specificando parcheggio, data/ora inizio e fine tramite `BookingPage`. Il sistema verifica la disponibilità prima di creare la prenotazione. | Alta |
+| RF-08 | Dopo la creazione, il sistema mostra una pagina di conferma (`ConfirmationPage`) con riepilogo: codice prenotazione, parcheggio, orari, importo. | Alta |
+| RF-09 | L'utente può visualizzare le proprie prenotazioni attive e storiche, con stato (confermata, annullata, completata). | Alta |
+| RF-10 | L'utente può cancellare una prenotazione esistente; il sistema aggiorna automaticamente lo stato del posto auto a libero. | Alta |
+| RF-11 | Il sistema supporta la modifica di prenotazioni esistenti (orari, posto auto) tramite `PrenotazioneController`. | Media |
+| RF-12 | Prima di creare una prenotazione, il backend verifica che il posto sia libero nell'intervallo richiesto e che il parcheggio non sia in chiusura programmata (`ChiusuraParcheggio`). | Alta |
+ 
+### Gestione Parcheggio (Pannello Gestore)
+ 
+| ID | Descrizione | Priorità |
+|---|---|---|
+| RF-14 | Il gestore accede a `ManagePage` per visualizzare e modificare i propri parcheggi, posti auto e prenotazioni attive. | Alta |
+| RF-15 | Il gestore può aggiungere, modificare o rimuovere posti auto da un parcheggio. Ogni posto ha uno stato (`StatoPostoAuto`: libero, occupato, riservato). | Alta |
+| RF-16 | Il gestore può definire periodi di chiusura temporanea (`ChiusuraParcheggio`), che impediscono nuove prenotazioni nell'intervallo. | Media |
+| RF-17 | Il gestore può aggiornare le informazioni del parcheggio: nome, indirizzo, coordinate, capacità, tariffe, orari di apertura. | Alta |
+ 
 
-- Node.js 18+
-- npm 9+
-
-## Setup rapido
 
 ```bash
 npm install
