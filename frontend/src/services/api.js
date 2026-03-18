@@ -130,6 +130,42 @@ export function getHeatmap() {
   return client.get('/api/analytics/heatmap')
 }
 
+/**
+ * POST /api/parkings
+ * @param {Object} body
+ * @returns {Promise<Object>} - created parking
+ */
+export function createParking(body) {
+  return client.post('/api/parkings', body)
+}
+
+/**
+ * PATCH /api/parkings/:id
+ * @param {string|number} id
+ * @param {Object} body
+ * @returns {Promise<Object>} - updated parking
+ */
+export function updateParking(id, body) {
+  return client.patch(`/api/parkings/${id}`, body)
+}
+
+/**
+ * DELETE /api/parkings/:id
+ * @param {string|number} id
+ * @returns {Promise<Object>}
+ */
+export function deleteParking(id) {
+  return client.delete(`/api/parkings/${id}`)
+}
+
+/**
+ * GET /api/bookings
+ * @returns {Promise<Array>} - list of bookings (admin)
+ */
+export function listBookings(params = {}) {
+  return client.get('/api/bookings', { params })
+}
+
 export default {
   getParkings,
   getParkingById,
@@ -140,4 +176,8 @@ export default {
   updateBooking,
   getAnalytics,
   getHeatmap,
+  createParking,
+  updateParking,
+  deleteParking,
+  listBookings,
 }

@@ -26,12 +26,18 @@ export default function Header() {
     return () => document.removeEventListener('click', onDocClick)
   }, [])
 
+  const user = typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || 'null')
+
   const navLinks = [
     { to: '/', label: 'Home' },
     { to: '/city-map', label: 'Mappa' },
     { to: '/about', label: 'Chi siamo' },
     { to: '/contact', label: 'Contatti' },
   ]
+
+  if (user && user.role === 'admin') {
+    navLinks.push({ to: '/admin', label: 'Admin' })
+  }
 
   const isActive = (path) => location.pathname === path
 
@@ -41,7 +47,7 @@ export default function Header() {
     navigate('/city-map', { state: { q: query } })
   }
 
-  const user = typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || 'null')
+  
 
   return (
     <header className="sticky top-0 z-50 bg-gradient-to-r from-[#08102a] via-[#0f1b3d] to-[#10243a] text-white shadow-lg">
