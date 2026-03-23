@@ -1,4 +1,4 @@
-FROM php:8.3-apache
+FROM php:8.2-apache
 
 # Argomenti opzionali per il proxy
 ARG PROXY_HOST
@@ -23,8 +23,17 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     && docker-php-ext-install zip
 
-# Abilita mod_rewrite e mod_ssl di Apache
-RUN a2enmod rewrite ssl
+# Abilita mod_rewrite di Apache
+RUN a2enmod rewrite
+
+# Abilita mod_ssl per HTTPS
+RUN a2enmod ssl
+
+# Genera certificati SSL self-signed
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/ssl/private/ssl-cert-snakeoil.key \
+    -out /etc/ssl/certs/ssl-cert-snakeoil.pem \
+    -subj "/C=IT/ST=Italy/L=Rome/O=PARKINGO/CN=localhost"
 
 # Copia configurazione PHP personalizzata
 COPY php.ini /usr/local/etc/php/

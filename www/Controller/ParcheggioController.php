@@ -19,6 +19,8 @@ class ParcheggioController {
     public function findAll(Request $request, Response $response, array $args): Response
     {
         $params = $request->getQueryParams();
+        # print_r($params);
+
         $parcheggi = $this->repository->ottieniTuttiParcheggi($params);
 
         $payload = json_encode([
@@ -67,29 +69,55 @@ class ParcheggioController {
         $id = (int) $args['id'];
         $params = $request->getQueryParams();
 
-        $disponibilita = $this->repository->getAvailability($id, $params);
+        try {
+            // Chiamata al repository
+            $disponibilita = $this->repository->getAvailability($id, $params);
 
-        if ($disponibilita === null) {
+            if ($disponibilita === null) {
+                $payload = json_encode([
+                    'success' => false,
+                    'message' => 'Parcheggio non trovato'
+                ]);
+
+                $response->getBody()->write($payload);
+                return $response
+                    ->withStatus(404)
+                    ->withHeader('Content-Type', 'application/json');
+            }
+
             $payload = json_encode([
-                'success' => false,
-                'message' => 'Parcheggio non trovato'
+                'success' => true,
+                'data'    => $disponibilita
             ]);
 
             $response->getBody()->write($payload);
             return $response
-                ->withStatus(404)
+                ->withStatus(200)
+                ->withHeader('Content-Type', 'application/json');
+
+        } catch (\InvalidArgumentException $e) {
+            // Gestione parametri mancanti o non validi
+            $payload = json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+
+            $response->getBody()->write($payload);
+            return $response
+                ->withStatus(400)
+                ->withHeader('Content-Type', 'application/json');
+        } catch (\Exception $e) {
+            // Gestione errori generici
+            $payload = json_encode([
+                'success' => false,
+                'message' => 'Errore interno del server'
+            ]);
+
+            $response->getBody()->write($payload);
+            return $response
+                ->withStatus(500)
                 ->withHeader('Content-Type', 'application/json');
         }
-
-        $payload = json_encode([
-            'success' => true,
-            'data'    => $disponibilita
-        ]);
-
-        $response->getBody()->write($payload);
-        return $response
-            ->withStatus(200)
-            ->withHeader('Content-Type', 'application/json');
     }
     // GET /api/parkings/cities
     public function getCitta(Request $request, Response $response, array $args): Response

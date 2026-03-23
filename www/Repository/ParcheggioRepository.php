@@ -60,34 +60,135 @@ class ParcheggioRepository {
     {
         $params = (array) $params;
 
-        $sql    = "SELECT * FROM parcheggi WHERE 1=1";
-        $binds  = [];
+        // --- Parametri opzionali con valori di default ---
+        // Se non forniti, usa l'ora attuale come inizio e +24 ore come fine
+        if (empty($params['data_inizio']) || empty($params['orario_inizio'])) {
+            $dateStart = new \DateTime();
+            $params['data_inizio'] = $dateStart->format('Y-m-d');
+            $params['orario_inizio'] = $dateStart->format('H:i');
+        }
+
+        if (empty($params['data_fine']) || empty($params['orario_fine'])) {
+            $dateEnd = new \DateTime('+24 hours');
+            $params['data_fine'] = $dateEnd->format('Y-m-d');
+            $params['orario_fine'] = $dateEnd->format('H:i');
+        }
+
+        $useAvailability = !empty($params['data_inizio']) && 
+                          !empty($params['orario_inizio']) && 
+                          !empty($params['data_fine']) && 
+                          !empty($params['orario_fine']);
+
+        // Costruisci SQL con o senza calcolo disponibilità
+        $availabilitySQL = $useAvailability 
+            ? "posti_disponibili(
+                            p.id, 
+                            :data_inizio, :orario_inizio, 
+                            :data_fine, :orario_fine
+                    ) AS posti_disponibili"
+            : "p.posti_totali AS posti_disponibili";
+
+        $sql = "SELECT p.*,
+                    (SELECT GROUP_CONCAT(DISTINCT s.nome ORDER BY s.nome SEPARATOR ',')
+                            FROM parcheggi_servizi ps
+                            JOIN servizi s ON ps.servizio_id = s.id
+                            WHERE ps.parcheggio_id = p.id) AS servizi_disponibili,
+                    {$availabilitySQL}
+                FROM parcheggi p
+                WHERE 1=1";
+
+        $binds = [];
+        
+        if ($useAvailability) {
+            $binds[':data_inizio'] = $params['data_inizio'];
+            $binds[':orario_inizio'] = $params['orario_inizio'];
+            $binds[':data_fine'] = $params['data_fine'];
+            $binds[':orario_fine'] = $params['orario_fine'];
+        }
+
+        // --- Filtri opzionali ---
+        if (!empty($params['query'])) {
+            $sql .= " AND (p.nome LIKE :query_nome OR p.indirizzo LIKE :query_indirizzo)";
+            $binds[':query_nome'] = '%' . $params['query'] . '%';
+            $binds[':query_indirizzo'] = '%' . $params['query'] . '%';
+        }
 
         if (!empty($params['citta'])) {
-            $sql .= " AND citta = :citta";
+            $sql .= " AND p.citta = :citta";
             $binds[':citta'] = $params['citta'];
         }
-        if (isset($params['al_chiuso']) && $params['al_chiuso'] !== '') {
-            $sql .= " AND al_chiuso = :al_chiuso";
-            $binds[':al_chiuso'] = (int) $params['al_chiuso'];
+
+        if (!empty($params['servizi'])) {
+            $serviceList = is_string($params['servizi'])
+                ? array_map('trim', explode(',', $params['servizi']))
+                : $params['servizi'];
+
+            if (!empty($serviceList)) {
+                $placeholders = [];
+                foreach ($serviceList as $index => $service) {
+                    $placeholder = ":servizio_{$index}";
+                    $placeholders[] = $placeholder;
+                    $binds[$placeholder] = $service;
+                }
+
+                $sql .= " AND p.id IN (
+                            SELECT parcheggio_id
+                            FROM parcheggi_servizi ps2
+                            JOIN servizi s2 ON ps2.servizio_id = s2.id
+                            WHERE s2.nome IN (" . implode(', ', $placeholders) . ")
+                            GROUP BY parcheggio_id
+                            HAVING COUNT(DISTINCT s2.nome) = :servizio_count
+                        )";
+                $binds[':servizio_count'] = count($serviceList);
+            }
         }
-        if (isset($params['elettrico']) && $params['elettrico'] !== '') {
-            $sql .= " AND elettrico = :elettrico";
-            $binds[':elettrico'] = (int) $params['elettrico'];
-        }
-        if (isset($params['disabili']) && $params['disabili'] !== '') {
-            $sql .= " AND disabili = :disabili";
-            $binds[':disabili'] = (int) $params['disabili'];
-        }
+
         if (!empty($params['prezzo_max'])) {
-            $sql .= " AND tariffa_oraria <= :prezzo_max";
+            $sql .= " AND p.tariffa_oraria <= :prezzo_max";
             $binds[':prezzo_max'] = (float) $params['prezzo_max'];
         }
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($binds);
+        if (isset($params['aperto_24h']) && $params['aperto_24h'] !== '') {
+            $sql .= " AND p.aperto_24h = :aperto_24h";
+            $binds[':aperto_24h'] = (int) $params['aperto_24h'];
+        }
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // --- Ordinamento ---
+        $orderBy = 'p.tariffa_oraria ASC';
+        if (!empty($params['order_by'])) {
+            switch ($params['order_by']) {
+                case 'prezzo_asc':  $orderBy = 'p.tariffa_oraria ASC'; break;
+                case 'prezzo_desc': $orderBy = 'p.tariffa_oraria DESC'; break;
+                case 'posti_asc':   $orderBy = 'p.posti_totali ASC'; break;
+                case 'posti_desc':  $orderBy = 'p.posti_totali DESC'; break;
+                case 'nome_asc':    $orderBy = 'p.nome ASC'; break;
+            }
+        }
+        $sql .= " ORDER BY {$orderBy}";
+
+        // --- Limit / Offset ---
+        if (!empty($params['limit'])) {
+            $sql .= " LIMIT :limit";
+            $binds[':limit'] = (int) $params['limit'];
+
+            if (!empty($params['offset'])) {
+                $sql .= " OFFSET :offset";
+                $binds[':offset'] = (int) $params['offset'];
+            }
+        }
+
+        // --- Esecuzione query ---
+        $stmt = $this->pdo->prepare($sql);
+        foreach ($binds as $key => $value) {
+            if (strpos($key, ':limit') !== false || strpos($key, ':offset') !== false || is_int($value)) {
+                $stmt->bindValue($key, $value, PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue($key, $value, PDO::PARAM_STR);
+            }
+        }
+        $stmt->execute();
+        $parcheggi = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $parcheggi;
     }
 
     public function ottieniParcheggioById(int $id): ?array {
@@ -103,7 +204,11 @@ class ParcheggioRepository {
     public function getAvailability(int $id, array $params): ?array
     {
         // Verifica che il parcheggio esista
-        $check = $this->pdo->prepare("SELECT id, posti_totali, orario_apertura, orario_chiusura FROM parcheggi WHERE id = :id");
+        $check = $this->pdo->prepare(
+            "SELECT id, posti_totali, orario_apertura, orario_chiusura 
+            FROM parcheggi 
+            WHERE id = :id"
+        );
         $check->execute([':id' => $id]);
         $parcheggio = $check->fetch(PDO::FETCH_ASSOC);
 
@@ -111,33 +216,35 @@ class ParcheggioRepository {
             return null;
         }
 
-        // Supporta sia ?data_inizio=&data_fine= che ?data=&orario_apertura=&orario_chiusura=
-        if (!empty($params['data_inizio']) && !empty($params['data_fine'])) {
-            $data_inizio = $params['data_inizio'];
-            $data_fine   = $params['data_fine'];
-        } elseif (!empty($params['data'])) {
-            
-            $apertura  = $params['orario_apertura']  ?? $parcheggio['orario_apertura'];
-            $chiusura  = $params['orario_chiusura']  ?? $parcheggio['orario_chiusura'];
-            $data_inizio = $params['data'] . ' ' . $apertura;
-            $data_fine   = $params['data'] . ' ' . $chiusura;
-        } else {
-            // Nessuna data fornita: restituisce solo posti totali
-            return [
-                'parcheggio_id'     => $id,
-                'posti_totali'      => (int) $parcheggio['posti_totali'],
-                'posti_disponibili' => null,
-            ];
+        // Controllo parametri obbligatori
+        foreach (['data_inizio', 'orario_inizio', 'data_fine', 'orario_fine'] as $key) {
+            if (empty($params[$key])) {
+                throw new InvalidArgumentException("Parametro mancante: $key");
+            }
         }
 
+        $data_inizio   = $params['data_inizio'];
+        $orario_inizio = $params['orario_inizio'];
+        $data_fine     = $params['data_fine'];
+        $orario_fine   = $params['orario_fine'];
+
+        // Chiamata alla funzione MySQL aggiornata
         $stmt = $this->pdo->prepare(
-            "SELECT posti_disponibili(:id, :data_inizio, :data_fine) AS disponibili"
+            "SELECT posti_disponibili(
+                :id, 
+                :data_inizio, :orario_inizio, 
+                :data_fine, :orario_fine
+            ) AS disponibili"
         );
+
         $stmt->execute([
-            ':id'          => $id,
-            ':data_inizio' => $data_inizio,
-            ':data_fine'   => $data_fine,
+            ':id'             => $id,
+            ':data_inizio'    => $data_inizio,
+            ':orario_inizio'  => $orario_inizio,
+            ':data_fine'      => $data_fine,
+            ':orario_fine'    => $orario_fine,
         ]);
+
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return [

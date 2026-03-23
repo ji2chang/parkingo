@@ -8,9 +8,10 @@ import { Badge } from '../components/ui/Badge'
 import { MapFilters } from '../components/MapFilters'
 import { getParkings } from '../services/api'
 import { formatCurrency } from '../utils/format'
+import { useBookingRefresh, BOOKING_EVENTS } from '../hooks/useBookingRefresh'
 
-const CENTER = [45.4641, 9.1919]
-const ZOOM = 13
+const CENTER = [41.8719, 12.5674]
+const ZOOM = 6
 const TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
 const TILE_ATTR =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -69,6 +70,15 @@ function makePopupHtml(parking) {
 
 
 function normalizeParking(p) {
+  let lat = p.lat ?? p.latitude
+  let lng = p.lng ?? p.longitude
+  
+  if (typeof lat === 'string') lat = parseFloat(lat)
+  if (typeof lng === 'string') lng = parseFloat(lng)
+  
+  const isValidLat = typeof lat === 'number' && !isNaN(lat) && lat >= 35 && lat <= 47
+  const isValidLng = typeof lng === 'number' && !isNaN(lng) && lng >= 8 && lng <= 20
+  
   return {
     id: p.id?.toString(),
     name: p.nome ?? p.name ?? 'Parcheggio',
@@ -86,10 +96,14 @@ function normalizeParking(p) {
     closingTime: p.orario_chiusura ?? p.closingTime ?? null,
     open24h: p.aperto_24h ?? p.open24h ?? false,
     description: p.descrizione ?? p.description ?? '',
-    lat: typeof p.lat === 'number' ? p.lat : (typeof p.latitude === 'number' ? p.latitude : CENTER[0]),
-    lng: typeof p.lng === 'number' ? p.lng : (typeof p.longitude === 'number' ? p.longitude : CENTER[1]),
+    lat: isValidLat ? lat : CENTER[0],
+    lng: isValidLng ? lng : CENTER[1],
     rating: typeof p.rating === 'number' ? p.rating : undefined,
-    amenities: p.servizi ?? p.amenities ?? [],
+    amenities: p.servizi_disponibili 
+      ? (typeof p.servizi_disponibili === 'string' 
+        ? p.servizi_disponibili.split(',').map(s => s.trim())
+        : p.servizi_disponibili)
+      : p.amenities ?? p.servizi ?? [],
     images: p.images ?? [],
   }
 }
@@ -102,19 +116,53 @@ export function MapPage() {
   const [filters, setFilters] = useState({ amenities: [], maxPrice: null })
   const [selected, setSelected] = useState(null)
   const [allParkings, setAllParkings] = useState([])
+  const [startDate, setStartDate] = useState('')
+  const [startHour, setStartHour] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [endHour, setEndHour] = useState('')
 
-  // Carica parcheggi dall'API al mount
+  // Inizializza date/ore
   useEffect(() => {
-    getParkings()
-      .then((payload) => {
-        // API returns { success: boolean, data: [...] }
-        const list = Array.isArray(payload)
-          ? payload
-          : payload?.data ?? []
-        setAllParkings(list.map(normalizeParking))
-      })
-      .catch(() => setAllParkings([]))
+    const now = new Date()
+    const start = new Date(now)
+    const end = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+    
+    setStartDate(start.toISOString().slice(0, 10))
+    setStartHour(start.toISOString().slice(11, 13) + ':00')
+    
+    setEndDate(end.toISOString().slice(0, 10))
+    setEndHour(end.toISOString().slice(11, 13) + ':00')
   }, [])
+
+  // Carica parcheggi dall'API al mount e quando cambiano le date
+  const fetchParkings = useCallback(async () => {
+    if (!startDate || !startHour || !endDate || !endHour) return
+    
+    try {
+      const payload = await getParkings({
+        data_inizio: startDate,
+        orario_inizio: startHour,
+        data_fine: endDate,
+        orario_fine: endHour,
+      })
+      // API returns { success: boolean, data: [...] }
+      const list = Array.isArray(payload)
+        ? payload
+        : payload?.data ?? []
+      setAllParkings(list.map(normalizeParking))
+    } catch {
+      setAllParkings([])
+    }
+  }, [startDate, startHour, endDate, endHour])
+
+  useEffect(() => {
+    fetchParkings()
+  }, [fetchParkings])
+
+  // Refresh parkings when a booking is created, cancelled, or updated (availability may have changed)
+  useBookingRefresh([BOOKING_EVENTS.CREATED, BOOKING_EVENTS.CANCELLED, BOOKING_EVENTS.UPDATED], () => {
+    fetchParkings()
+  })
 
   /** Filter parkings by active filters */
   const filtered = useMemo(
@@ -139,6 +187,30 @@ export function MapPage() {
     },
     [navigate]
   )
+
+  // Validazione date
+  const isDateValid = () => {
+    if (!startDate || !startHour || !endDate || !endHour) return false
+    const start = new Date(`${startDate}T${startHour}`)
+    const end = new Date(`${endDate}T${endHour}`)
+    return start < end
+  }
+
+  const handleStartDateChange = (e) => {
+    const newStartDate = e.target.value
+    setStartDate(newStartDate)
+    if (newStartDate && endDate && newStartDate > endDate) {
+      setEndDate(newStartDate)
+    }
+  }
+
+  const handleEndDateChange = (e) => {
+    const newEndDate = e.target.value
+    if (newEndDate && startDate && newEndDate < startDate) {
+      return
+    }
+    setEndDate(newEndDate)
+  }
 
   /** Initialise Leaflet map once on mount */
   useEffect(() => {
@@ -189,6 +261,16 @@ export function MapPage() {
         .on('click', () => setSelected(parking))
       map._markerLayer.addLayer(marker)
     })
+
+    // Auto-fit bounds to show all markers if there are any
+    if (filtered.length > 0) {
+      try {
+        const bounds = L.latLngBounds(filtered.map(p => [p.lat, p.lng]))
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 })
+      } catch (e) {
+        console.warn('Error fitting bounds:', e)
+      }
+    }
   }, [filtered])
 
   /** Recenter map to default view */
@@ -198,6 +280,10 @@ export function MapPage() {
 
   const ratio = selected ? (selected.availableSpots ?? 0) / (selected.totalSpots ?? 1) : 1
   const availVariant = ratio > 0.5 ? 'success' : ratio > 0.2 ? 'warning' : 'danger'
+  
+  const HOURS = Array.from({ length: 24 }, (_, i) =>
+    i.toString().padStart(2, '0') + ':00'
+  )
 
   return (
     <div className="space-y-6">
@@ -210,6 +296,62 @@ export function MapPage() {
           </p>
         </div>
         <MapFilters filters={filters} onChange={setFilters} />
+      </div>
+
+      {/* Time filters */}
+      <div className="glass-panel rounded-3xl border border-white/10 p-6 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          
+          {/* INIZIO */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-white/50">Inizio</p>
+            <input
+              type="date"
+              value={startDate}
+              onChange={handleStartDateChange}
+              min={new Date().toISOString().split('T')[0]}
+              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white"
+            />
+            <select
+              value={startHour}
+              onChange={(e) => setStartHour(e.target.value)}
+              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white"
+              style={{ colorScheme: 'dark' }}
+            >
+              <option value="" style={{ color: '#fff', backgroundColor: '#1a1a1a' }}>Ora</option>
+              {HOURS.map((h) => (
+                <option key={h} value={h} style={{ color: '#fff', backgroundColor: '#1a1a1a' }}>
+                  {h}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* FINE */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-white/50">Fine</p>
+            <input
+              type="date"
+              value={endDate}
+              onChange={handleEndDateChange}
+              min={startDate || new Date().toISOString().split('T')[0]}
+              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white"
+            />
+            <select
+              value={endHour}
+              onChange={(e) => setEndHour(e.target.value)}
+              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white"
+              style={{ colorScheme: 'dark' }}
+            >
+              <option value="" style={{ color: '#fff', backgroundColor: '#1a1a1a' }}>Ora</option>
+              {HOURS.map((h) => (
+                <option key={h} value={h} style={{ color: '#fff', backgroundColor: '#1a1a1a' }}>
+                  {h}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* Map container */}

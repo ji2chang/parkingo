@@ -8,11 +8,22 @@ import { ParkingCard } from '../components/ParkingCard'
 import { getParkings } from '../services/api'
 import { useSavedSearches } from '../hooks/useSavedSearches'
 import { useToast } from '../hooks/useToast'
+import { useBookingRefresh, BOOKING_EVENTS } from '../hooks/useBookingRefresh'
 import { formatRelative } from '../utils/format'
 
 const AMENITY_OPTIONS = ['Coperto', 'Scoperto', 'Videosorveglianza', 'Accesso H24', 'Colonnine EV', 'Valet']
 
+function buildDateTime(date, hour) {
+  if (!date || !hour) return null
+  return `${date}T${hour}`
+}
+
 export function SearchPage() {
+  const [startDate, setStartDate] = useState('')
+  const [startHour, setStartHour] = useState('')
+
+  const [endDate, setEndDate] = useState('')
+  const [endHour, setEndHour] = useState('')
   const [query, setQuery] = useState('')
   const [city, setCity] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
@@ -22,39 +33,126 @@ export function SearchPage() {
   const [loading, setLoading] = useState(false)
   const { savedSearches, addSearch, removeSearch } = useSavedSearches()
   const { showToast } = useToast()
+  const HOURS = Array.from({ length: 24 }, (_, i) =>
+    i.toString().padStart(2, '0') + ':00'
+  )
+
+  useEffect(() => {
+    const now = new Date()
+
+    const start = new Date(now)
+    const end = new Date(now.getTime() + 60 * 60 * 1000)
+
+    setStartDate(start.toISOString().slice(0, 10))
+    setStartHour(start.toISOString().slice(11, 13) + ':00')
+
+    setEndDate(end.toISOString().slice(0, 10))
+    setEndHour(end.toISOString().slice(11, 13) + ':00')
+  }, [])
+
+  // Validazione date
+  const isDateValid = () => {
+    if (!startDate || !startHour || !endDate || !endHour) return false
+    const start = new Date(`${startDate}T${startHour}`)
+    const end = new Date(`${endDate}T${endHour}`)
+    return start < end
+  }
+
+  const handleStartDateChange = (e) => {
+    const newStartDate = e.target.value
+    setStartDate(newStartDate)
+    if (newStartDate && endDate && newStartDate > endDate) {
+      setEndDate(newStartDate)
+    }
+  }
+
+  const handleEndDateChange = (e) => {
+    const newEndDate = e.target.value
+    if (newEndDate && startDate && newEndDate < startDate) {
+      showToast({
+        type: 'warning',
+        title: 'Errore',
+        description: 'La data di fine non può essere prima della data di inizio'
+      })
+      return
+    }
+    setEndDate(newEndDate)
+  }
 
   const fetchResults = useCallback(
-    async ({ q = query, c = city, mp = maxPrice, am = amenities } = {}) => {
-      setLoading(true)
-      try {
-        const params = {}
-        if (c) params.citta = c
-        if (mp) params.prezzo_max = parseFloat(mp)
-        if (q) params.query = q
-        am.forEach((a) => {
-          if (a === 'Coperto') params.al_chiuso = true
-          if (a === 'Colonnine EV') params.elettrico = true
-          if (a === 'Disabili') params.disabili = true
-        })
-        const payload = await getParkings(params)
-        const list = Array.isArray(payload) ? payload : payload?.data ?? []
-        setResults(list.map(normalizeParking))
-      } catch (err) {
-        showToast({ type: 'danger', title: 'Errore', description: err.message })
-        setResults([])
-      } finally {
-        setLoading(false)
+  async ({ q = query, c = city, mp = maxPrice, am = amenities} = {}) => {
+    const sd = buildDateTime(startDate, startHour)
+    const ed = buildDateTime(endDate, endHour)
+
+    if (!sd || !ed) {
+      showToast({
+        type: 'warning',
+        title: 'Errore',
+        description: 'Seleziona data e ora'
+      })
+      return
+    }
+
+    if (new Date(sd) >= new Date(ed)) {
+      showToast({
+        type: 'warning',
+        title: 'Errore',
+        description: 'La data e l\'ora di fine devono essere dopo quelle di inizio'
+      })
+      return
+    }
+    setLoading(true)
+    try {
+      const params = {}
+      if (c) params.citta = c
+      if (mp) params.prezzo_max = parseFloat(mp)
+      if (q) params.query = q
+      if (am && am.length) {
+        params.servizi = am.join(',')
       }
-    },
-    [query, city, maxPrice, amenities, showToast]
-  )
+      params.data_inizio=startDate
+      params.orario_inizio=startHour
+      params.data_fine=endDate
+      params.orario_fine=endHour
+
+      const payload = await getParkings(params)
+      const list = Array.isArray(payload) ? payload : payload?.data ?? []
+      setResults(list.map(normalizeParking))
+    } catch (err) {
+      showToast({ type: 'danger', title: 'Errore', description: err.message })
+      setResults([])
+    } finally {
+      setLoading(false)
+    }
+  },
+  [
+    query,
+    city,
+    maxPrice,
+    amenities,
+    startDate,
+    startHour,
+    endDate,
+    endHour,
+    showToast
+  ]
+)
 
   // Carica al mount e quando cambiano i filtri (debounce leggero)
   useEffect(() => {
+
+    if (!startDate || !startHour || !endDate || !endHour) return
+
     const t = setTimeout(() => fetchResults(), 400)
     return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, city, maxPrice, amenities])
+  }, [query, city, maxPrice, amenities, startDate, startHour, endDate, endHour])
+
+  // Refresh results when a booking is created, cancelled, or updated (availability may have changed)
+  useBookingRefresh([BOOKING_EVENTS.CREATED, BOOKING_EVENTS.CANCELLED, BOOKING_EVENTS.UPDATED], () => {
+    if (startDate && startHour && endDate && endHour) {
+      fetchResults()
+    }
+  })
 
   function toggleAmenity(a) {
     setAmenities((prev) => (prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]))
@@ -81,6 +179,8 @@ export function SearchPage() {
     setCity('')
     setMaxPrice('')
     setAmenities([])
+    setStartDateTime('')
+    setEndDateTime('')
   }
 
   const hasFilters = query || city || maxPrice || amenities.length > 0
@@ -124,7 +224,60 @@ export function SearchPage() {
             </Button>
           )}
         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          
+          {/* INIZIO */}
+          <div className="space-y-2">
+            <p className="text-xs text-white/50">Inizio</p>
 
+            <Input
+              type="date"
+              value={startDate}
+              onChange={handleStartDateChange}
+              min={new Date().toISOString().split('T')[0]}
+            />
+
+            <select
+              value={startHour}
+              onChange={(e) => setStartHour(e.target.value)}
+              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white"
+              style={{ colorScheme: 'dark' }}
+            >
+              <option value="" style={{ color: '#fff', backgroundColor: '#1a1a1a' }}>Ora</option>
+              {HOURS.map((h) => (
+                <option key={h} value={h} style={{ color: '#fff', backgroundColor: '#1a1a1a' }}>
+                  {h}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* FINE */}
+          <div className="space-y-2">
+            <p className="text-xs text-white/50">Fine</p>
+
+            <Input
+              type="date"
+              value={endDate}
+              onChange={handleEndDateChange}
+              min={startDate || new Date().toISOString().split('T')[0]}
+            />
+
+            <select
+              value={endHour}
+              onChange={(e) => setEndHour(e.target.value)}
+              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white"
+              style={{ colorScheme: 'dark' }}
+            >
+              <option value="" style={{ color: '#fff', backgroundColor: '#1a1a1a' }}>Ora</option>
+              {HOURS.map((h) => (
+                <option key={h} value={h} style={{ color: '#fff', backgroundColor: '#1a1a1a' }}>
+                  {h}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
         <AnimatePresence>
           {showFilters && (
             <motion.div
@@ -223,7 +376,12 @@ export function SearchPage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {results.map((p, i) => (
-              <ParkingCard key={p.id} parking={p} index={i} />
+              <ParkingCard 
+                key={p.id} 
+                parking={p} 
+                index={i}
+                searchFilters={{ startDate, startHour, endDate, endHour }}
+              />
             ))}
           </div>
         )}

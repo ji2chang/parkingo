@@ -12,11 +12,10 @@ services:
     container_name: parkingo
     ports:
       - "9080:80"
-      - "9443:443"
+      # - "9443:443"
     volumes:
       - ./www:/var/www/html
       - ./apache-config:/etc/apache2/sites-available
-      - ./apache-config/certs:/etc/ssl/mkcert:ro
     networks:
       - parking_network
     depends_on:
@@ -53,10 +52,12 @@ services:
       - web
     networks:
       - parking_network
-    command: ["composer", "--version"]
+    command: ["composer", "--version","--no-interaction"]
 
 networks:
   parking_network:
+    driver: bridge
 
 volumes:
   db_data:
+    driver: local

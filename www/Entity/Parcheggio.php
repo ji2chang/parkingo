@@ -26,9 +26,7 @@ class Parcheggio implements ArrayAccess
     public ?float $raggio;
 
     // Caratteristiche
-    public bool $al_chiuso;
-    public bool $elettrico;
-    public bool $disabili;
+    public int $posti_disponibili;
 
     public function __construct(array $data = [])
     {

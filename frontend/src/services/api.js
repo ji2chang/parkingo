@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 
-const BASE_URL = 'https://localhost:9443/'
+const BASE_URL = 'http://localhost:9080/'
 
 const client = axios.create({
   baseURL: BASE_URL,
@@ -55,10 +55,11 @@ export function getParkingById(id) {
  * GET /api/parkings/:id/availability
  * @param {string|number} id
  * @param {Object} params
- * @param {string}  params.data            - ISO date string
- * @param {string}  [params.orario_apertura] - "HH:MM"
- * @param {string}  [params.orario_chiusura] - "HH:MM"
- * @returns {Promise<Object>}
+ * @param {string}  params.data_inizio      - "YYYY-MM-DD"
+ * @param {string}  params.orario_inizio    - "HH:MM"
+ * @param {string}  params.data_fine        - "YYYY-MM-DD"
+ * @param {string}  params.orario_fine      - "HH:MM"
+ * @returns {Promise<Object>}  { parcheggio_id, posti_totali, posti_disponibili }
  */
 export function getParkingAvailability(id, params = {}) {
   return client.get(`/api/parkings/${id}/availability`, { params })

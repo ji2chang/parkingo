@@ -40,6 +40,29 @@ CREATE TABLE parcheggi (
     INDEX idx_citta (citta)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE servizi (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_nome (nome)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE parcheggi_servizi (
+    parcheggio_id INT NOT NULL,
+    servizio_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    PRIMARY KEY (parcheggio_id, servizio_id),
+    FOREIGN KEY (parcheggio_id) REFERENCES parcheggi(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (servizio_id) REFERENCES servizi(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    
+    INDEX idx_parcheggio (parcheggio_id),
+    INDEX idx_servizio (servizio_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
 -- ============================================
 -- TABELLA: prenotazioni
 -- ============================================
@@ -120,35 +143,32 @@ CREATE PROCEDURE genera_codice_prenotazione(OUT nuovo_codice VARCHAR(21))
 BEGIN
     DECLARE codice_esistente INT DEFAULT 1;
 
-    -- Variabile con collation coerente con la tabella
     DECLARE caratteri VARCHAR(64)
-        CHARACTER SET utf8mb4
-        COLLATE utf8mb4_general_ci
+        CHARACTER SET utf8
+        COLLATE utf8_general_ci
         DEFAULT '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
 
     DECLARE lunghezza INT DEFAULT 21;
     DECLARE i INT;
 
-    -- Anche l'output deve avere la collation corretta
-    SET nuovo_codice = '' COLLATE utf8mb4_general_ci;
+    SET nuovo_codice = '' COLLATE utf8_general_ci;
 
     WHILE codice_esistente > 0 DO
-            SET nuovo_codice = '' COLLATE utf8mb4_general_ci;
-            SET i = 0;
+        SET nuovo_codice = '' COLLATE utf8_general_ci;
+        SET i = 0;
 
-            WHILE i < lunghezza DO
-                    SET nuovo_codice = CONCAT(
-                            nuovo_codice,
-                            SUBSTRING(caratteri, FLOOR(1 + RAND() * 64), 1)
-                                       );
-                    SET i = i + 1;
-                END WHILE;
-
-            -- Nessun CONVERT: MariaDB gestisce correttamente la collation se le variabili sono coerenti
-            SELECT COUNT(*) INTO codice_esistente
-            FROM prenotazioni
-            WHERE codice_prenotazione = nuovo_codice;
+        WHILE i < lunghezza DO
+            SET nuovo_codice = CONCAT(
+                nuovo_codice,
+                SUBSTRING(caratteri, FLOOR(1 + RAND() * 64), 1)
+            );
+            SET i = i + 1;
         END WHILE;
+
+        SELECT COUNT(*) INTO codice_esistente
+        FROM prenotazioni
+        WHERE codice_prenotazione = nuovo_codice;
+    END WHILE;
 END//
 
 
@@ -156,29 +176,35 @@ END//
 DROP FUNCTION IF EXISTS posti_disponibili//
 CREATE FUNCTION posti_disponibili(
     p_parcheggio_id INT,
-    p_data_inizio DATETIME,
-    p_data_fine DATETIME
+    p_data_inizio DATE,
+    p_orario_inizio TIME,
+    p_data_fine DATE,
+    p_orario_fine TIME
 ) RETURNS INT
 DETERMINISTIC
 READS SQL DATA
 BEGIN
     DECLARE posti_totali INT;
     DECLARE posti_occupati INT;
-    
-    -- Recupera posti totali del parcheggio
-    SELECT parcheggi.posti_totali INTO posti_totali
+    DECLARE p_start DATETIME;
+    DECLARE p_end DATETIME;
+
+    SET p_start = TIMESTAMP(p_data_inizio, p_orario_inizio);
+    SET p_end   = TIMESTAMP(p_data_fine, p_orario_fine);
+
+    SELECT posti_totali INTO posti_totali
     FROM parcheggi
     WHERE id = p_parcheggio_id;
-    
-    -- Conta prenotazioni attive che si sovrappongono al periodo richiesto
+
     SELECT COUNT(*) INTO posti_occupati
     FROM prenotazioni
     WHERE parcheggio_id = p_parcheggio_id
       AND stato = 'attiva'
       AND (
-          (data_inizio < p_data_fine AND data_fine > p_data_inizio)
+          data_inizio < p_end
+          OR data_fine > p_start
       );
-    
+
     RETURN posti_totali - posti_occupati;
 END //
 
@@ -206,8 +232,10 @@ BEGIN
     -- Verifica disponibilità
     SET disponibili = posti_disponibili(
         NEW.parcheggio_id,
-        NEW.data_inizio,
-        NEW.data_fine
+        DATE(NEW.data_inizio),
+        TIME(NEW.data_inizio),
+        DATE(NEW.data_fine),
+        TIME(NEW.data_fine)
     );
     
     IF disponibili <= 0 THEN

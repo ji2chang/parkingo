@@ -6,12 +6,20 @@ import { Badge } from './ui/Badge'
 import { Button } from './ui/Button'
 import { formatCurrency } from '../utils/format'
 
-export function ParkingCard({ parking, index = 0 }) {
+export function ParkingCard({ parking, index = 0, searchFilters = null }) {
   const navigate = useNavigate()
   const ratio = parking.availableSpots / parking.totalSpots
 
   const availVariant =
     ratio > 0.5 ? 'success' : ratio > 0.2 ? 'warning' : ratio > 0 ? 'danger' : 'danger'
+
+  const handleBooking = () => {
+    const state = {}
+    if (searchFilters) {
+      state.searchFilters = searchFilters
+    }
+    navigate(`/booking/${parking.id}`, { state })
+  }
 
   return (
     <motion.div
@@ -53,7 +61,7 @@ export function ParkingCard({ parking, index = 0 }) {
         </div>
       </div>
 
-      <Button onClick={() => navigate(`/booking/${parking.id}`)} className="w-full">
+      <Button onClick={handleBooking} className="w-full">
         Prenota ora
       </Button>
     </motion.div>
@@ -63,4 +71,5 @@ export function ParkingCard({ parking, index = 0 }) {
 ParkingCard.propTypes = {
   parking: PropTypes.object.isRequired,
   index: PropTypes.number,
+  searchFilters: PropTypes.object,
 }

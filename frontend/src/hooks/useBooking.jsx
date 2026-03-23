@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { createBooking, getBooking, cancelBooking as apiCancelBooking, updateBooking } from '../services/api'
 import { getParkingById } from '../services/api'
+import { emitBookingEvent, BOOKING_EVENTS } from './useBookingRefresh'
 
 const BookingContext = createContext(null)
 
@@ -39,10 +40,17 @@ export function BookingProvider({ children }) {
     setError(null)
     try {
       const result = await createBooking(body)
+      
+      // 验证返回的数据包含有效的 codice
+      if (!result || (!result.codice_prenotazione && !result.codice)) {
+        throw new Error('Errore: risposta del server non valida')
+      }
+      
+      const codice = result.codice_prenotazione || result.codice
       setBookingDetails(result)
       setBookings((prev) => {
-        const exists = prev.find((b) => b.codice === result.codice)
-        const next = exists ? prev.map((b) => (b.codice === result.codice ? result : b)) : [result, ...prev]
+        const exists = prev.find((b) => b.codice_prenotazione === codice || b.codice === codice)
+        const next = exists ? prev.map((b) => (b.codice_prenotazione === codice || b.codice === codice ? result : b)) : [result, ...prev]
         saveToStorage(next)
         return next
       })
@@ -111,6 +119,8 @@ export function BookingProvider({ children }) {
         saveToStorage(next)
         return next
       })
+      // Emit cancellation event to trigger refresh
+      emitBookingEvent(BOOKING_EVENTS.CANCELLED, { code })
       return true
     } catch (err) {
       setError(err.message)
@@ -136,6 +146,8 @@ export function BookingProvider({ children }) {
         saveToStorage(next)
         return next
       })
+      // Emit update event to trigger refresh
+      emitBookingEvent(BOOKING_EVENTS.UPDATED, { code, booking: result })
       return result
     } catch (err) {
       setError(err.message)

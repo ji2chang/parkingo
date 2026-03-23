@@ -31,7 +31,7 @@ export function MapFilters({ filters, onChange }) {
       </Button>
 
       {open && (
-        <div className="absolute left-0 top-12 z-50 glass-panel w-72 rounded-3xl border border-white/10 p-5 shadow-2xl space-y-4">
+        <div className="absolute right-0 top-12 z-[9999] glass-panel w-72 rounded-3xl border border-white/10 p-5 shadow-2xl space-y-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-white/50 mb-2">
               Prezzo max / ora (€)

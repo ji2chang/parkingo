@@ -86,7 +86,7 @@ export function ManagePage() {
   const firstName = booking.nome ?? booking.customer?.firstName ?? ''
   const lastName = booking.cognome ?? booking.customer?.lastName ?? ''
   const email = booking.email ?? booking.customer?.email ?? ''
-  const total = booking.importo ?? booking.total ?? 0
+  const total = booking.importo ?? booking.total ?? booking.importo_totale ?? 0
 
   return (
     <div className="space-y-8">
