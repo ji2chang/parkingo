@@ -27,6 +27,19 @@ $app->options('/{routes:.+}', function (Request $request, Response $response) {
     return $response;
 });
 
+$app->get('/', function (Request $request, Response $response) {
+    $htmlFile = __DIR__ . '/api-docs.html';
+    
+    if (file_exists($htmlFile)) {
+        $html = file_get_contents($htmlFile);
+        $response->getBody()->write($html);
+        return $response->withHeader('Content-Type', 'text/html');
+    }
+    
+    $response->getBody()->write('Documentation not found');
+    return $response->withStatus(404);
+});
+
 // 6. Define/Require your routes
 require __DIR__ . '/routesParcheggio.php';
 require __DIR__ . '/routesPrenotazione.php';

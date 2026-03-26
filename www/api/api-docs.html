@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Parkingo API · Documentazione Interattiva</title>
+    <!-- Google Fonts & simple reset for modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 (free) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f4f7fc;
+            font-family: 'Inter', sans-serif;
+            color: #1a2c3e;
+            line-height: 1.4;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* header / hero */
+        .api-header {
+            margin-bottom: 2.5rem;
+            text-align: center;
+        }
+
+        .welcome-badge {
+            background: #0f2b3d;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1.5rem 0.5rem 1.2rem;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 6px 12px -8px rgba(0,0,0,0.1);
+            margin-bottom: 1.2rem;
+        }
+
+        .welcome-badge i {
+            font-size: 1.2rem;
+            color: #6bc2f0;
+        }
+
+        h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1a4d6b, #0e2f42);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.5rem;
+        }
+
+        .sub {
+            color: #4a627a;
+            font-size: 1rem;
+            border-left: 3px solid #2c7da0;
+            padding-left: 1rem;
+            margin-top: 0.5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* grid layout */
+        .endpoints-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .section-header {
+            padding: 1.3rem 1.8rem;
+            background: #ffffff;
+            border-bottom: 1px solid #eef2f5;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .section-title i {
+            font-size: 1.7rem;
+            color: #2c7da0;
+            background: #e9f2f7;
+            padding: 8px;
+            border-radius: 16px;
+        }
+
+        .section-title h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f5068;
+        }
+
+        .endpoint-count {
+            background: #eef3f8;
+            padding: 0.25rem 0.75rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #2c7da0;
+        }
+
+        /* table style moderne */
+        .endpoint-table-wrapper {
+            overflow-x: auto;
+            padding: 0 0.2rem;
+        }
+
+        .endpoint-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .endpoint-table th {
+            text-align: left;
+            padding: 1rem 1rem 0.8rem 1.8rem;
+            font-weight: 600;
+            color: #2c5a74;
+            background: #fafdff;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e2edf2;
+        }
+
+        .endpoint-table td {
+            padding: 1rem 1rem 1rem 1.8rem;
+            border-bottom: 1px solid #eff4f8;
+            vertical-align: top;
+            color: #1e2f3c;
+        }
+
+        .endpoint-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* method badges */
+        .method-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.7rem;
+            border-radius: 30px;
+            letter-spacing: 0.3px;
+            background: #eef2fa;
+            color: #2c3e66;
+            font-family: monospace;
+        }
+
+        .method-GET {
+            background: #e1f5fe;
+            color: #0369a1;
+        }
+        .method-POST {
+            background: #e8f0e7;
+            color: #2b6e3c;
+        }
+        .method-DELETE {
+            background: #ffe8e6;
+            color: #b91c1c;
+        }
+        .method-PATCH {
+            background: #fff0db;
+            color: #b45309;
+        }
+
+        .path-code {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-weight: 500;
+            background: #f2f6f9;
+            padding: 0.2rem 0.4rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: #0c4a6e;
+            word-break: break-all;
+        }
+
+        .desc-text {
+            font-weight: 500;
+            color: #1f3b4c;
+            margin-bottom: 0.25rem;
+        }
+
+        .params-info, .body-info {
+            font-size: 0.72rem;
+            color: #4f6f8a;
+            margin-top: 0.3rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 0.3rem;
+        }
+
+        .params-info strong, .body-info strong {
+            font-weight: 600;
+            color: #2c7da0;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            background: #f0f6fa;
+            padding: 0.1rem 0.4rem;
+            border-radius: 12px;
+        }
+
+        .param-list, .body-list {
+            font-family: monospace;
+            background: #f8fafc;
+            padding: 0.15rem 0.4rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            color: #2d4e6e;
+        }
+
+        .inline-icon {
+            margin-right: 5px;
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        /* footer */
+        .footer-note {
+            margin-top: 2.5rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #5d7f9a;
+            border-top: 1px solid #dce7ef;
+            padding-top: 1.8rem;
+        }
+
+        @media (max-width: 780px) {
+            body {
+                padding: 1.2rem;
+            }
+            .endpoint-table th, .endpoint-table td {
+                padding: 0.9rem 0.8rem;
+            }
+            .section-header {
+                padding: 1rem 1.2rem;
+            }
+            .method-badge {
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="api-header">
+        <div class="welcome-badge">
+            <i class="fas fa-parking"></i>
+            <span>Parkingo API · v1</span>
+            <i class="fas fa-code"></i>
+        </div>
+        <h1><i class="fas fa-map-marked-alt" style="color: #2c7da0; margin-right: 0.5rem;"></i>Parkingo API Reference</h1>
+        <div class="sub">
+            Endpoints per gestione parcheggi, prenotazioni e analytics — documentazione interattiva
+        </div>
+    </div>
+
+    <div class="endpoints-grid">
+        <!-- PARKINGS SECTION -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-warehouse"></i>
+                    <h2>Parcheggi</h2>
+                </div>
+                <div class="endpoint-count"><i class="fas fa-list-ul"></i> 3 endpoints</div>
+            </div>
+            <div class="endpoint-table-wrapper">
+                <table class="endpoint-table">
+                    <thead>
+                        <tr><th>Metodo</th><th>Endpoint</th><th>Descrizione</th><th>Parametri / Body</th></tr>
+                    </thead>
+                    <tbody>
+                        <!-- /api/parkings GET (lista con filtri) -->
+                        <tr>
+                            <td><span class="method-badge method-GET">GET</span></td>
+                            <td><span class="path-code">/api/parkings</span></td>
+                            <td><span class="desc-text">Lista parcheggi con filtri</span></td>
+                            <td>
+                                <div class="params-info">
+                                    <strong><i class="fas fa-sliders-h inline-icon"></i> Query params</strong>
+                                    <span class="param-list">data_inizio, orario_inizio, data_fine, orario_fine, citta, servizi, query</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- /api/parkings/:id GET dettaglio -->
+                        <tr>
+                            <td><span class="method-badge method-GET">GET</span></td>
+                            <td><span class="path-code">/api/parkings/:id</span></td>
+                            <td><span class="desc-text">Dettaglio singolo parcheggio</span></td>
+                            <td>
+                                <div class="params-info">
+                                    <strong><i class="fas fa-link inline-icon"></i> Path param</strong>
+                                    <span class="param-list">id (identificativo parcheggio)</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- /api/parkings/:id/availability -->
+                        <tr>
+                            <td><span class="method-badge method-GET">GET</span></td>
+                            <td><span class="path-code">/api/parkings/:id/availability</span></td>
+                            <td><span class="desc-text">Disponibilità slot orari</span></td>
+                            <td>
+                                <div class="params-info">
+                                    <strong><i class="fas fa-calendar-alt inline-icon"></i> Query params</strong>
+                                    <span class="param-list">data_inizio, orario_inizio, data_fine, orario_fine</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BOOKINGS SECTION -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-calendar-check"></i>
+                    <h2>Prenotazioni</h2>
+                </div>
+                <div class="endpoint-count"><i class="fas fa-ticket-alt"></i> 4 endpoints</div>
+            </div>
+            <div class="endpoint-table-wrapper">
+                <table class="endpoint-table">
+                    <thead><tr><th>Metodo</th><th>Endpoint</th><th>Descrizione</th><th>Parametri / Body</th></tr></thead>
+                    <tbody>
+                        <!-- POST /api/bookings -->
+                        <tr>
+                            <td><span class="method-badge method-POST">POST</span></td>
+                            <td><span class="path-code">/api/bookings</span></td>
+                            <td><span class="desc-text">Crea prenotazione</span></td>
+                            <td>
+                                <div class="body-info">
+                                    <strong><i class="fas fa-file-alt inline-icon"></i> Request body</strong>
+                                    <span class="body-list">parcheggio_id, data_inizio, data_fine, targa, nome, cognome, email, telefono, note</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- GET /api/bookings/:code -->
+                        <tr>
+                            <td><span class="method-badge method-GET">GET</span></td>
+                            <td><span class="path-code">/api/bookings/:code</span></td>
+                            <td><span class="desc-text">Recupera prenotazione per codice</span></td>
+                            <td>
+                                <div class="params-info">
+                                    <strong><i class="fas fa-hashtag inline-icon"></i> Path param</strong>
+                                    <span class="param-list">code (codice univoco prenotazione)</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- DELETE /api/bookings/:code -->
+                        <tr>
+                            <td><span class="method-badge method-DELETE">DELETE</span></td>
+                            <td><span class="path-code">/api/bookings/:code</span></td>
+                            <td><span class="desc-text">Cancella prenotazione</span></td>
+                            <td>
+                                <div class="params-info">
+                                    <strong><i class="fas fa-trash-alt inline-icon"></i> Path param</strong>
+                                    <span class="param-list">code (codice prenotazione da eliminare)</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- PATCH /api/bookings/:code -->
+                        <tr>
+                            <td><span class="method-badge method-PATCH">PATCH</span></td>
+                            <td><span class="path-code">/api/bookings/:code</span></td>
+                            <td><span class="desc-text">Modifica prenotazione</span></td>
+                            <td>
+                                <div class="body-info">
+                                    <strong><i class="fas fa-edit inline-icon"></i> Request body</strong>
+                                    <span class="body-list">data_inizio, data_fine</span>
+                                </div>
+                                <div class="params-info" style="margin-top: 4px;">
+                                    <strong>Path</strong> <span class="param-list">:code</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ANALYTICS SECTION -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    <h2>Analytics & Insight</h2>
+                </div>
+                <div class="endpoint-count"><i class="fas fa-chart-simple"></i> 2 endpoints</div>
+            </div>
+            <div class="endpoint-table-wrapper">
+                <table class="endpoint-table">
+                    <thead><tr><th>Metodo</th><th>Endpoint</th><th>Descrizione</th><th>Informazioni aggiuntive</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="method-badge method-GET">GET</span></td>
+                            <td><span class="path-code">/api/analytics</span></td>
+                            <td><span class="desc-text">Dati statistici globali</span></td>
+                            <td><div class="params-info"><i class="fas fa-chart-pie"></i> Metriche aggregate su prenotazioni, occupazione, trend</div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="method-badge method-GET">GET</span></td>
+                            <td><span class="path-code">/api/analytics/heatmap</span></td>
+                            <td><span class="desc-text">Dati heatmap calendario</span></td>
+                            <td><div class="params-info"><i class="fas fa-calendar-week"></i> Distribuzione intensità prenotazioni per giorno/ora</div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- additional contextual info / note -->
+    <div class="footer-note">
+        <i class="fas fa-microphone-alt"></i> Tutti gli endpoint restituiscono formato JSON. <br>
+        Per le chiamate che richiedono body (POST/PATCH) utilizzare Content-Type: application/json. <br>
+        <span style="opacity: 0.7;">© Parkingo — documentazione dinamica integrata</span>
+    </div>
+</div>
+
+<!-- Non è richiesto JS aggiuntivo, ma se volessimo interattività futura, struttura pronta. 
+     Tutti i dati sono embeddati staticamente dal backend fornito. -->
+</body>
+</html>

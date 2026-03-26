@@ -30,16 +30,14 @@ Il database parking_db è organizzato in questo modo:
 - Definizione dello schema SQL con tabelle e vincoli di integrità.
 - Creazione della classe Connections per gestire il database in modo efficiente.
 - Sviluppo del PrenotazioneRepository con le operazioni CRUD principali.
-
-### Cose da fare a breve
 - Completare il file index.php collegando le rotte Slim ai metodi del Repository.
-- Aggiungere controlli di validazione sui dati inviati dall'utente (es. formato email e date).
-- Gestire meglio i messaggi di errore per l'utente finale (404 e 500 in formato JSON).
-
-### Sviluppi futuri
 - Automatizzare il calcolo del prezzo totale basandosi sulla tariffa oraria del parcheggio.
 - Creare una pagina web semplice per permettere agli utenti di prenotare visivamente.
+
+### Sviluppi futuri
 - Gestire l'assegnazione specifica del posto auto (piano e codice) tramite la tabella dedicata.
+- Aggiungere controlli di validazione sui dati inviati dall'utente (es. formato email e date).
+- Gestire meglio i messaggi di errore per l'utente finale (404 e 500 in formato JSON).
 
 ---
 
@@ -49,7 +47,7 @@ Il database parking_db è organizzato in questo modo:
 2. Scarica il progetto.
 3. Avvia i servizi con il comando:
    docker compose up -d
-4. Puoi trovare le API all'indirizzo: http://localhost:9080
+4. Puoi trovare le API all'indirizzo: http://localhost:9080/api
 
 ## Come sono gli api?
 ritornano dei json di formato
@@ -65,9 +63,9 @@ ritornano dei json di formato
 ### Endpoint Parkings
 | Metodo | Endpoint                         | Descrizione                  | Parametri / Path                                                                                                                       |
 |--------|----------------------------------|------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| GET    | `/api/parkings`                  | Lista parcheggi con filtri   | `?citta=`, `?lat=`, `?lng=`, `?data=`,`?raggio=`, `?orario_apertura=`, `?orario_chiusura=`, `?al_chiuso=`, `?elettrico=`, `?disabili=` |
+| GET    | `/api/parkings`                  | Lista parcheggi con filtri   | `data_inizio=`(obbligatorio),`orario_inizio=`(obbligatorio), `data_fine=`(obbligatorio),`orario_fine=`(obbligatorio),`citta=`,`servizi=`,`query=`|
 | GET    | `/api/parkings/:id`              | Dettaglio singolo parcheggio | `id` nel path                                                                                                                          |
-| GET    | `/api/parkings/:id/availability` | Disponibilità slot orari     | `?data=`, `?orario_apertura=`, `?orario_chuisura=`                                                                                     |
+| GET    | `/api/parkings/:id/availability` | Disponibilità slot orari     | `data_inizio=`(obbligatorio),`orario_inizio=`(obbligatorio), `data_fine=`(obbligatorio),`orario_fine=`(obbligatorio)|
 
 ---
 
