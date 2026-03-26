@@ -1,5 +1,5 @@
 -- =====================================================
--- 1. 插入 servizi 数据
+-- 1. Inserisci dati servizi
 -- =====================================================
 INSERT INTO servizi (nome) VALUES
 ('Coperto'),
@@ -10,7 +10,7 @@ INSERT INTO servizi (nome) VALUES
 ('Valet');
 
 -- =====================================================
--- 2. 插入 parcheggi 数据（20个停车场）
+-- 2. Inserisci dati parcheggi (20 parcheggi)
 -- =====================================================
 INSERT INTO parcheggi (nome, indirizzo, citta, cap, lat, lng, raggio, posti_totali, tariffa_oraria, orario_apertura, orario_chiusura, aperto_24h, descrizione) VALUES
 ('Parcheggio Stazione Centrale', 'Via Giovanni Battista Pirelli, 1', 'Milano', '20124', 45.485600, 9.203700, 50, 800, 3.50, '00:00:00', '23:59:59', 1, 'Parcheggio centrale vicino alla stazione'),
@@ -35,10 +35,10 @@ INSERT INTO parcheggi (nome, indirizzo, citta, cap, lat, lng, raggio, posti_tota
 ('Parcheggio Centro Pescara', 'Corso Umberto I, 150', 'Pescara', '65122', 42.464300, 14.214700, 35, 280, 1.80, '08:00:00', '22:00:00', 0, 'Parcheggio coperto nel centro città');
 
 -- =====================================================
--- 3. 插入关联数据 parcheggi_servizi（每个停车场随机分配服务）
+-- 3. Inserisci dati associativi parcheggi_servizi (assegnazione servizi per ogni parcheggio)
 -- =====================================================
 
--- 获取服务ID
+-- Ottieni ID servizi
 SET @coperto = (SELECT id FROM servizi WHERE nome = 'Coperto');
 SET @scoperto = (SELECT id FROM servizi WHERE nome = 'Scoperto');
 SET @videosorveglianza = (SELECT id FROM servizi WHERE nome = 'Videosorveglianza');
