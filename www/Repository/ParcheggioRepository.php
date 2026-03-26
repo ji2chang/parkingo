@@ -64,7 +64,7 @@ class ParcheggioRepository {
                           !empty($params['data_fine']) && 
                           !empty($params['orario_fine']);
         if (!$useAvailability) {
-            throw new InvalidArgumentException("Per calcolare la disponibilità, è necessario fornire data_inizio, orario_inizio, data_fine e orario_fine");
+            throw new \InvalidArgumentException("Per calcolare la disponibilità, è necessario fornire data_inizio, orario_inizio, data_fine e orario_fine");
         }
         // Costruisci SQL con o senza calcolo disponibilità
         $availabilitySQL = "posti_disponibili(

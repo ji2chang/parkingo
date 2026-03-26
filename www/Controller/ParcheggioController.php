@@ -18,49 +18,93 @@ class ParcheggioController {
     // GET /api/parkings
     public function findAll(Request $request, Response $response, array $args): Response
     {
-        $params = $request->getQueryParams();
-        # print_r($params);
+        try {
+            $params = $request->getQueryParams();
+            # print_r($params);
+            
+            $parcheggi = $this->repository->ottieniTuttiParcheggi($params);
 
-        $parcheggi = $this->repository->ottieniTuttiParcheggi($params);
+            $payload = json_encode([
+                'success' => true,
+                'data'    => $parcheggi
+            ]);
 
-        $payload = json_encode([
-            'success' => true,
-            'data'    => $parcheggi
-        ]);
+            $response->getBody()->write($payload);
+            return $response
+                ->withStatus(200)
+                ->withHeader('Content-Type', 'application/json');
+        } catch (\InvalidArgumentException $e) {
+            $payload = json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
 
-        $response->getBody()->write($payload);
-        return $response
-            ->withStatus(200)
-            ->withHeader('Content-Type', 'application/json');
+            $response->getBody()->write($payload);
+            return $response
+                ->withStatus(400)
+                ->withHeader('Content-Type', 'application/json');
+        } catch (\Exception $e) {
+            $payload = json_encode([
+                'success' => false,
+                'message' => 'Errore interno del server'
+            ]);
+
+            $response->getBody()->write($payload);
+            return $response
+                ->withStatus(500)
+                ->withHeader('Content-Type', 'application/json');
+        }
     }
 
     // GET /api/parkings/{id}
     public function findById(Request $request, Response $response, array $args): Response
     {
-        $id = (int) $args['id'];
-        $parcheggio = $this->repository->ottieniParcheggioById($id);
+        try {
+            $id = (int) $args['id'];
+            $parcheggio = $this->repository->ottieniParcheggioById($id);
 
-        if ($parcheggio === null) {
+            if ($parcheggio === null) {
+                $payload = json_encode([
+                    'success' => false,
+                    'message' => 'Parcheggio non trovato'
+                ]);
+
+                $response->getBody()->write($payload);
+                return $response
+                    ->withStatus(404)
+                    ->withHeader('Content-Type', 'application/json');
+            }
+
             $payload = json_encode([
-                'success' => false,
-                'message' => 'Parcheggio non trovato'
+                'success' => true,
+                'data'    => $parcheggio
             ]);
 
             $response->getBody()->write($payload);
             return $response
-                ->withStatus(404)
+                ->withStatus(200)
+                ->withHeader('Content-Type', 'application/json');
+        } catch (\InvalidArgumentException $e) {
+            $payload = json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+
+            $response->getBody()->write($payload);
+            return $response
+                ->withStatus(400)
+                ->withHeader('Content-Type', 'application/json');
+        } catch (\Exception $e) {
+            $payload = json_encode([
+                'success' => false,
+                'message' => 'Errore interno del server'
+            ]);
+
+            $response->getBody()->write($payload);
+            return $response
+                ->withStatus(500)
                 ->withHeader('Content-Type', 'application/json');
         }
-
-        $payload = json_encode([
-            'success' => true,
-            'data'    => $parcheggio
-        ]);
-
-        $response->getBody()->write($payload);
-        return $response
-            ->withStatus(200)
-            ->withHeader('Content-Type', 'application/json');
     }
 
     // GET /api/parkings/{id}/availability
@@ -122,16 +166,38 @@ class ParcheggioController {
     // GET /api/parkings/cities
     public function getCitta(Request $request, Response $response, array $args): Response
     {
-        $citta = $this->repository->ottieniTutteLeCitta();
+        try {
+            $citta = $this->repository->ottieniTutteLeCitta();
 
-        $payload = json_encode([
-            'success' => true,
-            'data'    => $citta
-        ]);
+            $payload = json_encode([
+                'success' => true,
+                'data'    => $citta
+            ]);
 
-        $response->getBody()->write($payload);
-        return $response
-            ->withStatus(200)
-            ->withHeader('Content-Type', 'application/json');
+            $response->getBody()->write($payload);
+            return $response
+                ->withStatus(200)
+                ->withHeader('Content-Type', 'application/json');
+        } catch (\InvalidArgumentException $e) {
+            $payload = json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+
+            $response->getBody()->write($payload);
+            return $response
+                ->withStatus(400)
+                ->withHeader('Content-Type', 'application/json');
+        } catch (\Exception $e) {
+            $payload = json_encode([
+                'success' => false,
+                'message' => 'Errore interno del server'
+            ]);
+
+            $response->getBody()->write($payload);
+            return $response
+                ->withStatus(500)
+                ->withHeader('Content-Type', 'application/json');
+        }
     }
 }
