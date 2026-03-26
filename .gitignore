@@ -58,12 +58,6 @@ storage/
 tmp/
 cache/
 
-# Database files
-*.sql
-*.sqlite
-*.sqlite3
-*.db
-
 # Certificates
 *.pem
 *.key
