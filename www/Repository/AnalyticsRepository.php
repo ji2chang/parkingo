@@ -15,27 +15,22 @@ class AnalyticsRepository {
     public function __construct() {
         $this->pdo = Connection::get();
     }
+
+    /**
+     * Get PDO connection instance (for direct queries when needed)
+     */
+    public function getPdo(): PDO {
+        return $this->pdo;
+    }
     /**
      * GET /api/analytics
      * Ritorna dati statistici globali: ricavi, occupazione media e conteggi stati.
      */
     public function getGlobalStats() {
-        $sql = "SELECT 
-                    COUNT(*) as totale_prenotazioni,
-                    SUM(CASE WHEN stato = 'completata' THEN importo_totale ELSE 0 END) as ricavi_totali,
-                    SUM(CASE WHEN stato = 'annullata' THEN 1 ELSE 0 END) as totale_annullate,
-                    (SELECT COUNT(*) FROM parcheggi) as totale_parcheggi,
-                    (SELECT AVG(posti_totali) FROM parcheggi) as media_posti_per_struttura
-                FROM prenotazioni";
+        $sql = "SELECT * FROM statistiche_parcheggi";
 
         $stmt = $this->pdo->query($sql);
         $stats = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // Calcolo tasso di conversione/completamento
-        $stats['tasso_completamento'] = $stats['totale_prenotazioni'] > 0 
-            ? round(($stats['totale_prenotazioni'] - $stats['totale_annullate']) / $stats['totale_prenotazioni'] * 100, 2) 
-            : 0;
-
         return $stats;
     }
 
@@ -65,6 +60,50 @@ class AnalyticsRepository {
      */
     public function getParkingPerformance() {
         $sql = "SELECT * FROM statistiche_parcheggi ORDER BY ricavi_totali DESC";
+        $stmt = $this->pdo->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get recent bookings with parking info
+     * Returns latest bookings with their associated parking data
+     */
+    public function getRecentBookings($limit = 6) {
+        $sql = "SELECT 
+                    p.codice_prenotazione as code, 
+                    p.created_at, 
+                    p.importo_totale as importo,
+                    p.stato,
+                    pa.id as parcheggio_id,
+                    pa.nome as parcheggio_nome
+                FROM prenotazioni p
+                JOIN parcheggi pa ON p.parcheggio_id = pa.id
+                ORDER BY p.created_at DESC
+                LIMIT :limit";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get parking usage statistics grouped by parking name
+     * Returns count of bookings per parking, sorted by frequency
+     */
+    public function getParkingUsageStats() {
+        $sql = "SELECT 
+                    pa.id,
+                    pa.nome,
+                    COUNT(p.id) as prenotazioni
+                FROM parcheggi pa
+                LEFT JOIN prenotazioni p ON pa.id = p.parcheggio_id 
+                    AND p.stato != 'annullata'
+                GROUP BY pa.id, pa.nome
+                ORDER BY prenotazioni DESC
+                limit 10
+                ";
+        
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

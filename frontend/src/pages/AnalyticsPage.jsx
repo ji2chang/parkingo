@@ -16,31 +16,33 @@ export function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    
+    // Fetch analytics data from API
     getAnalytics()
-      .then((data) => {
-        // Il backend restituisce { stats, prenotazioni, parcheggi_top }
-        setStats(data.stats ?? data)
-        setBookings(data.prenotazioni ?? data.bookings ?? [])
-        setParkingUsage(data.parcheggi_top ?? data.parking_usage ?? [])
+      .then((response) => {
+        // Backend returns { success: true, data: { stats, prenotazioni, parcheggi_top } }
+        const data = response.data || response;
+        setStats(data.stats || {})
+        setBookings(data.prenotazioni || [])
+        setParkingUsage(data.parcheggi_top || [])
       })
       .catch(() => {
-        
+        // Fallback: load from localStorage if API fails
         try {
           const stored = JSON.parse(localStorage.getItem('parkly_bookings') || '[]')
           setBookings(stored || [])
           
+          // Calculate stats from stored bookings
           const totale = (stored || []).length
           const cancellate = (stored || []).filter((b) => (b.stato === 'cancellata' || b.status === 'cancelled')).length
           const attive = totale - cancellate
           const spesa_totale = (stored || []).reduce((s, b) => s + (Number(b.importo ?? b.total ?? 0) || 0), 0)
           const costo_medio = totale > 0 ? spesa_totale / totale : 0
-          setStats({ totale, attive, cancellate, spesa_totale, costo_medio, costo_medio_display: costo_medio })
+          setStats({ totale, attive, cancellate, spesa_totale, costo_medio })
 
-          // parking usage: raggruppa per nome parcheggio
+          // Group bookings by parking name for usage stats
           const usageMap = {}
           ;(stored || []).forEach((b) => {
-            const name = b.parcheggio?.nome ?? b.parking?.name ?? b.parcheggio_nome ?? 'Sconosciuto'
+            const name = b.parcheggio?.nome ?? b.parking?.name ?? b.parcheggio_nome ?? 'Unknown'
             if (!usageMap[name]) usageMap[name] = { nome: name, prenotazioni: 0 }
             usageMap[name].prenotazioni += 1
           })
@@ -119,13 +121,13 @@ export function AnalyticsPage() {
                   onClick={() => navigate(`/manage/${b.code}`)}
                 >
                   <div className="min-w-0">
-                    <p className="font-medium text-white truncate">{b.parcheggio?.nome ?? b.parking?.name}</p>
-                    <p className="text-xs text-white/50">{formatDate(b.created_at ?? b.createdAt)} · {b.codice ?? b.code}</p>
+                    <p className="font-medium text-white truncate">{b.parcheggio?.nome}</p>
+                    <p className="text-xs text-white/50">{formatDate(b.created_at)} · {b.code}</p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-sm font-semibold text-white">{formatCurrency(b.importo ?? b.total ?? 0)}</span>
-                    <Badge variant={(b.stato === 'cancellata' || b.status === 'cancelled') ? 'danger' : 'success'}>
-                      {(b.stato === 'cancellata' || b.status === 'cancelled') ? 'Cancellata' : 'Attiva'}
+                    <span className="text-sm font-semibold text-white">{formatCurrency(b.importo)}</span>
+                    <Badge variant={b.stato === 'annullata' ? 'danger' : 'success'}>
+                      {b.stato === 'annullata' ? 'Cancelled' : 'Active'}
                     </Badge>
                   </div>
                 </div>

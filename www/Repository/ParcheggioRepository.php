@@ -59,34 +59,19 @@ class ParcheggioRepository {
     public function ottieniTuttiParcheggi(array $params = []): array
     {
         $params = (array) $params;
-
-        // --- Parametri opzionali con valori di default ---
-        // Se non forniti, usa l'ora attuale come inizio e +24 ore come fine
-        if (empty($params['data_inizio']) || empty($params['orario_inizio'])) {
-            $dateStart = new \DateTime();
-            $params['data_inizio'] = $dateStart->format('Y-m-d');
-            $params['orario_inizio'] = $dateStart->format('H:i');
-        }
-
-        if (empty($params['data_fine']) || empty($params['orario_fine'])) {
-            $dateEnd = new \DateTime('+24 hours');
-            $params['data_fine'] = $dateEnd->format('Y-m-d');
-            $params['orario_fine'] = $dateEnd->format('H:i');
-        }
-
         $useAvailability = !empty($params['data_inizio']) && 
                           !empty($params['orario_inizio']) && 
                           !empty($params['data_fine']) && 
                           !empty($params['orario_fine']);
-
+        if (!$useAvailability) {
+            throw new InvalidArgumentException("Per calcolare la disponibilità, è necessario fornire data_inizio, orario_inizio, data_fine e orario_fine");
+        }
         // Costruisci SQL con o senza calcolo disponibilità
-        $availabilitySQL = $useAvailability 
-            ? "posti_disponibili(
+        $availabilitySQL = "posti_disponibili(
                             p.id, 
                             :data_inizio, :orario_inizio, 
                             :data_fine, :orario_fine
-                    ) AS posti_disponibili"
-            : "p.posti_totali AS posti_disponibili";
+                    ) AS posti_disponibili";
 
         $sql = "SELECT p.*,
                     (SELECT GROUP_CONCAT(DISTINCT s.nome ORDER BY s.nome SEPARATOR ',')
@@ -99,12 +84,10 @@ class ParcheggioRepository {
 
         $binds = [];
         
-        if ($useAvailability) {
-            $binds[':data_inizio'] = $params['data_inizio'];
-            $binds[':orario_inizio'] = $params['orario_inizio'];
-            $binds[':data_fine'] = $params['data_fine'];
-            $binds[':orario_fine'] = $params['orario_fine'];
-        }
+        $binds[':data_inizio'] = $params['data_inizio'];
+        $binds[':orario_inizio'] = $params['orario_inizio'];
+        $binds[':data_fine'] = $params['data_fine'];
+        $binds[':orario_fine'] = $params['orario_fine'];
 
         // --- Filtri opzionali ---
         if (!empty($params['query'])) {
@@ -176,7 +159,7 @@ class ParcheggioRepository {
                 $binds[':offset'] = (int) $params['offset'];
             }
         }
-
+        // echo $sql;
         // --- Esecuzione query ---
         $stmt = $this->pdo->prepare($sql);
         foreach ($binds as $key => $value) {

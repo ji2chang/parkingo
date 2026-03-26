@@ -172,7 +172,7 @@ BEGIN
 END//
 
 
--- Funzione per calcolare posti disponibili in un periodo
+-- Function to calculate available parking spots in a given time period
 DROP FUNCTION IF EXISTS posti_disponibili//
 CREATE FUNCTION posti_disponibili(
     p_parcheggio_id INT,
@@ -181,31 +181,36 @@ CREATE FUNCTION posti_disponibili(
     p_data_fine DATE,
     p_orario_fine TIME
 ) RETURNS INT
-DETERMINISTIC
+NOT DETERMINISTIC
 READS SQL DATA
 BEGIN
-    DECLARE posti_totali INT;
-    DECLARE posti_occupati INT;
+    DECLARE p_posti_totali INT DEFAULT 0;
+    DECLARE posti_occupati INT DEFAULT 0;
     DECLARE p_start DATETIME;
     DECLARE p_end DATETIME;
 
     SET p_start = TIMESTAMP(p_data_inizio, p_orario_inizio);
     SET p_end   = TIMESTAMP(p_data_fine, p_orario_fine);
 
-    SELECT posti_totali INTO posti_totali
+    -- Get total parking spots for this parking lot
+    SELECT COALESCE(posti_totali, 0) INTO p_posti_totali
     FROM parcheggi
     WHERE id = p_parcheggio_id;
+    -- If parking lot not found, return 0
+    IF p_posti_totali <= 0 THEN
+        RETURN 0;
+    END IF;
 
+    -- Count bookings that overlap with the requested time period
+    -- Non-overlap condition: booking_end <= request_start OR booking_start >= request_end
     SELECT COUNT(*) INTO posti_occupati
     FROM prenotazioni
     WHERE parcheggio_id = p_parcheggio_id
-      AND stato = 'attiva'
-      AND (
-          data_inizio < p_end
-          OR data_fine > p_start
-      );
+      AND stato != 'annullata'
+      AND NOT (data_fine <= p_start OR data_inizio >= p_end);
 
-    RETURN posti_totali - posti_occupati;
+    -- Return available spots, but ensure it's not negative
+    RETURN p_posti_totali - posti_occupati;
 END //
 
 -- Procedura per aggiornare automaticamente prenotazioni scadute
@@ -250,21 +255,17 @@ DELIMITER ;
 -- VIEW UTILI
 -- ============================================
 
--- Vista per statistiche parcheggi
+-- Vista per statistiche globali parcheggi
+-- Returns global statistics: total bookings, active, cancelled, total spend, average cost
 DROP VIEW IF EXISTS statistiche_parcheggi;
 CREATE VIEW statistiche_parcheggi AS
 SELECT 
-    p.id,
-    p.nome,
-    p.citta,
-    p.posti_totali,
-    COUNT(CASE WHEN pr.stato = 'attiva' THEN 1 END) as prenotazioni_attive,
-    COUNT(CASE WHEN pr.stato = 'completata' THEN 1 END) as prenotazioni_completate,
-    COUNT(CASE WHEN pr.stato = 'annullata' THEN 1 END) as prenotazioni_annullate,
-    SUM(CASE WHEN pr.stato = 'completata' THEN pr.importo_totale ELSE 0 END) as ricavi_totali
-FROM parcheggi p
-LEFT JOIN prenotazioni pr ON p.id = pr.parcheggio_id
-GROUP BY p.id, p.nome, p.citta, p.posti_totali;
+    COUNT(*) as totale,
+    SUM(CASE WHEN stato = 'attiva' THEN 1 ELSE 0 END) as attive,
+    SUM(CASE WHEN stato = 'annullata' THEN 1 ELSE 0 END) as cancellate,
+    COALESCE(SUM(CASE WHEN stato != 'annullata' THEN importo_totale ELSE 0 END), 0) as spesa_totale,
+    ROUND(COALESCE(AVG(CASE WHEN stato != 'annullata' THEN importo_totale END), 0), 2) as costo_medio
+FROM prenotazioni;
 
 -- Vista per prenotazioni attive con dettagli parcheggio
 DROP VIEW IF EXISTS prenotazioni_attive_dettagli;
