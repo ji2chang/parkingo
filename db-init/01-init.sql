@@ -14,6 +14,7 @@ USE parking_db;
 DROP TABLE IF EXISTS chiusure_parcheggi;
 DROP TABLE IF EXISTS parcheggi;
 DROP TABLE IF EXISTS prenotazioni;
+DROP TABLE IF EXISTS utenti;
 
 
 CREATE TABLE parcheggi (
@@ -39,6 +40,24 @@ CREATE TABLE parcheggi (
 
     INDEX idx_citta (citta)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE utenti (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    nome VARCHAR(100) NOT NULL,
+    cognome VARCHAR(100) NOT NULL,
+    nome_utente VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(100) NOT NULL, 
+    email VARCHAR(255) NOT NULL UNIQUE,
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME DEFAULT GETDATE(),
+);
+
+CREATE TABLE auto (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    targa VARCHAR(20) NOT NULL UNIQUE,
+    id_utente INT,
+    FOREIGN KEY (id_utente) REFERENCES utenti(id)
+);
 
 CREATE TABLE servizi (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -71,12 +90,9 @@ CREATE TABLE prenotazioni (
     codice_prenotazione VARCHAR(21) NOT NULL UNIQUE COMMENT 'Codice univoco stile nanoid',
     parcheggio_id INT NOT NULL,
     
-    -- Dati utente (no autenticazione)
-    nome VARCHAR(100) NOT NULL,
-    cognome VARCHAR(100) NOT NULL,
-    targa VARCHAR(20) NOT NULL,
-    email VARCHAR(255) NULL COMMENT 'Opzionale per conferme',
-    telefono VARCHAR(20),
+    -- Dati utente 
+    id_utente INT not null,
+    id_auto INT not null,
     
     -- Periodo prenotazione
     data_inizio DATETIME NOT NULL,
@@ -94,6 +110,8 @@ CREATE TABLE prenotazioni (
     
     -- Chiavi esterne
     FOREIGN KEY (parcheggio_id) REFERENCES parcheggi(id) ON DELETE RESTRICT,
+    FOREIGN KEY (id_utente) REFERENCES utenti(id),
+    FOREIGN KEY (id_auto) REFERENCES auto(id);
     
     -- Indici per performance
     INDEX idx_codice (codice_prenotazione),

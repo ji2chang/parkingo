@@ -35,6 +35,9 @@ RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -out /etc/ssl/certs/ssl-cert-snakeoil.pem \
     -subj "/C=IT/ST=Italy/L=Rome/O=PARKINGO/CN=localhost"
 
+# Installa Composer
+COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
+
 # Copia configurazione PHP personalizzata
 COPY php.ini /usr/local/etc/php/
 
