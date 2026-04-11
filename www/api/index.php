@@ -4,10 +4,10 @@ header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Credentials: true");
 
+use parkingo\Middleware\JwtMiddleware;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
-use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 
 require '../vendor/autoload.php';
 
@@ -39,11 +39,14 @@ $app->get('/', function (Request $request, Response $response) {
     $response->getBody()->write('Documentation not found');
     return $response->withStatus(404);
 });
-
+$jwt = new JWTMiddleware();
 // 6. Define/Require your routes
-require __DIR__ . '/routesParcheggio.php';
-require __DIR__ . '/routesPrenotazione.php';
-require __DIR__ . '/routesAnalytics.php';
+$app->group('', function () {
+    require __DIR__ . '/routesParcheggio.php';
+    require __DIR__ . '/routesPrenotazione.php';
+    require __DIR__ . '/routesAnalytics.php';
+})->add($jwt);
+
 require __DIR__ . '/routesUtente.php';
 
 // 7. Error Middleware (Keep at the bottom)
