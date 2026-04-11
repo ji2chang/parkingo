@@ -42,18 +42,18 @@ CREATE TABLE parcheggi (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE utenti (
-    id INT PRIMARY KEY IDENTITY(1,1),
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL ,
     nome VARCHAR(100) NOT NULL,
     cognome VARCHAR(100) NOT NULL,
     nome_utente VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(100) NOT NULL, 
     email VARCHAR(255) NOT NULL UNIQUE,
-    created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME DEFAULT GETDATE(),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE auto (
-    id INT PRIMARY KEY IDENTITY(1,1),
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
     targa VARCHAR(20) NOT NULL UNIQUE,
     id_utente INT,
     FOREIGN KEY (id_utente) REFERENCES utenti(id)
@@ -111,15 +111,15 @@ CREATE TABLE prenotazioni (
     -- Chiavi esterne
     FOREIGN KEY (parcheggio_id) REFERENCES parcheggi(id) ON DELETE RESTRICT,
     FOREIGN KEY (id_utente) REFERENCES utenti(id),
-    FOREIGN KEY (id_auto) REFERENCES auto(id);
+    FOREIGN KEY (id_auto) REFERENCES auto(id),
     
     -- Indici per performance
     INDEX idx_codice (codice_prenotazione),
     INDEX idx_parcheggio (parcheggio_id),
     INDEX idx_stato (stato),
-    INDEX idx_periodo (data_inizio, data_fine),
-    INDEX idx_targa (targa),
-    
+    INDEX idx_utente (id_utente),
+    INDEX idx_auto (id_auto),
+
     -- Vincoli (rimosso CURRENT_TIMESTAMP dal CHECK per compatibilità)
     CONSTRAINT chk_periodo CHECK (data_fine > data_inizio)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

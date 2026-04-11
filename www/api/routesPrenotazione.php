@@ -10,8 +10,3 @@ $app->group('/bookings', function ($group) {
     $group->delete('/{code}', PrenotazioneController::class . ':deletePrenotazione');
     $group->patch('/{code}', PrenotazioneController::class . ':updatePrenotazione');
 });
-
-$app->group('/analytics', function ($group) {
-    $group->get('', AnalyticsController::class . ':getStats');
-    $group->get('/heatmap', AnalyticsController::class . ':getHeatmap');
-});

@@ -36,7 +36,7 @@ class PrenotazioneController
                 ->withHeader('Content-Type', 'application/json');
         }
 
-        // 格式化数据使其與 createPrenotazione 一致
+        //  createPrenotazione
         $parcheggio_id = $prenotazione->parcheggio_id ?? $prenotazione['parcheggio_id'] ?? null;
         if (!$parcheggio_id) {
             throw new \Exception("Parcheggio ID not found in prenotazione");

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "da6182e6002451f15ea8ae066f00896a",
+    "content-hash": "5a1cc377fe93086558e6ddcf8cd72ece",
     "packages": [
         {
             "name": "fig/http-message-util",
@@ -64,16 +64,16 @@
         },
         {
             "name": "firebase/php-jwt",
-            "version": "v7.0.4",
+            "version": "v7.0.5",
             "source": {
                 "type": "git",
-                "url": "https://github.com/firebase/php-jwt.git",
-                "reference": "e41f1bd7dbe3c5455c3f72d4338cfeb083b71931"
+                "url": "https://github.com/googleapis/php-jwt.git",
+                "reference": "47ad26bab5e7c70ae8a6f08ed25ff83631121380"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/e41f1bd7dbe3c5455c3f72d4338cfeb083b71931",
-                "reference": "e41f1bd7dbe3c5455c3f72d4338cfeb083b71931",
+                "url": "https://api.github.com/repos/googleapis/php-jwt/zipball/47ad26bab5e7c70ae8a6f08ed25ff83631121380",
+                "reference": "47ad26bab5e7c70ae8a6f08ed25ff83631121380",
                 "shasum": ""
             },
             "require": {
@@ -121,23 +121,23 @@
                 "php"
             ],
             "support": {
-                "issues": "https://github.com/firebase/php-jwt/issues",
-                "source": "https://github.com/firebase/php-jwt/tree/v7.0.4"
+                "issues": "https://github.com/googleapis/php-jwt/issues",
+                "source": "https://github.com/googleapis/php-jwt/tree/v7.0.5"
             },
-            "time": "2026-03-27T21:17:19+00:00"
+            "time": "2026-04-01T20:38:03+00:00"
         },
         {
             "name": "laravel/serializable-closure",
-            "version": "v2.0.10",
+            "version": "v2.0.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/serializable-closure.git",
-                "reference": "870fc81d2f879903dfc5b60bf8a0f94a1609e669"
+                "reference": "d1af40ac4a6ccc12bd062a7184f63c9995a63bdd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/serializable-closure/zipball/870fc81d2f879903dfc5b60bf8a0f94a1609e669",
-                "reference": "870fc81d2f879903dfc5b60bf8a0f94a1609e669",
+                "url": "https://api.github.com/repos/laravel/serializable-closure/zipball/d1af40ac4a6ccc12bd062a7184f63c9995a63bdd",
+                "reference": "d1af40ac4a6ccc12bd062a7184f63c9995a63bdd",
                 "shasum": ""
             },
             "require": {
@@ -185,7 +185,7 @@
                 "issues": "https://github.com/laravel/serializable-closure/issues",
                 "source": "https://github.com/laravel/serializable-closure"
             },
-            "time": "2026-02-20T19:59:49+00:00"
+            "time": "2026-04-07T13:32:18+00:00"
         },
         {
             "name": "nikic/fast-route",
@@ -936,7 +936,6 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "ext-password": "*",
         "ext-pdo": "*"
     },
     "platform-dev": [],

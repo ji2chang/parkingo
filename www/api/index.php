@@ -43,6 +43,8 @@ $app->get('/', function (Request $request, Response $response) {
 // 6. Define/Require your routes
 require __DIR__ . '/routesParcheggio.php';
 require __DIR__ . '/routesPrenotazione.php';
+require __DIR__ . '/routesAnalytics.php';
+require __DIR__ . '/routesUtente.php';
 
 // 7. Error Middleware (Keep at the bottom)
 $app->addErrorMiddleware(true, true, true);

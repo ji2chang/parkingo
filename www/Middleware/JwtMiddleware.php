@@ -12,6 +12,8 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Response;
 
+require_once __DIR__ . '/../config/config.php';
+
 class JwtMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request,

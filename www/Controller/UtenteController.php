@@ -30,13 +30,13 @@ class UtenteController
         $dati = $request->getParsedBody();
 
         // Validazione minima: i campi devono esserci
-        if (empty($dati['username']) || empty($dati['password'])) {
+        if (empty($dati['nome_utente']) || empty($dati['password'])) {
             return $this->rispostaJson($response, [
-                'errore' => 'Username e password sono obbligatori'
+                'errore' => 'Nome utente e password sono obbligatori'
             ], 400);
         }
         $passwordHash = password_hash($dati['password'], PASSWORD_BCRYPT);
-        $token = $this->$repository->verificaCredenziali($dati['username'], $passwordHash);
+        $token = $this->repository->verificaCredenziali($dati['nome_utente'], $passwordHash);
 
         if ($token === null) {
             return $this->rispostaJson($response, [
@@ -49,6 +49,41 @@ class UtenteController
         ]);
     }
 
+    public function signin(Request $request, Response $response): Response
+    {
+        $dati = $request->getParsedBody();
+        $required = [
+            'nome_utente', 'password', 'email', 'nome', 'cognome'
+        ];
+        foreach ($required as $field) {
+            if (empty($dati[$field])) {
+                return $this->rispostaJson($response, [
+                    'errore' => $field . ' è obbligatorio'
+                ], 400);
+            }
+        }
+        if($this->repository->esisteNomeUtente($dati['nome_utente'])){
+            return $this->rispostaJson($response, [
+                'errore' => 'Nome utente esiste già'
+            ]);
+        }
+        if($this->repository->esisteEmail($dati['email'])){
+            return $this->rispostaJson($response, [
+                'errore' => 'Email già usato'
+            ]);
+        }
+        $success = $this->repository->creaUtente($dati);
+        if ($success) {
+            return $this->rispostaJson($response, [
+                'success' => 'Utente creato'
+            ]);
+        } else {
+            return $this->rispostaJson($response, [
+                'errore' => 'Errore creazione utente'
+            ]);
+        }
+    }
+
     public function profilo(Request $request, Response $response): Response
     {
         // I dati dell'utente sono stati iniettati dal JwtMiddleware
@@ -57,15 +92,6 @@ class UtenteController
         return $this->rispostaJson($response, [
             'id'       => $utente->id,
             'username' => $utente->username,
-        ]);
-    }
-
-    public function logout(Request $request, Response $response): Response
-    {
-        // JWT è stateless: il backend non ha nulla da invalidare.
-        // Il client dovrà semplicemente eliminare il token in suo possesso.
-        return $this->rispostaJson($response, [
-            'messaggio' => 'Logout effettuato. Elimina il token lato client.'
         ]);
     }
 }
