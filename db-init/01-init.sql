@@ -2,6 +2,7 @@
 -- DATABASE: Sistema Prenotazione Parcheggi
 -- Versione compatibile MariaDB 10.11
 -- ============================================
+DROP DATABASE IF EXISTS parking_db;
 
 -- Crea il database se non esiste
 CREATE DATABASE IF NOT EXISTS parking_db CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
@@ -290,18 +291,20 @@ DROP VIEW IF EXISTS prenotazioni_attive_dettagli;
 CREATE VIEW prenotazioni_attive_dettagli AS
 SELECT 
     pr.codice_prenotazione,
-    pr.nome,
-    pr.cognome,
-    pr.targa,
+    u.nome,
+    u.cognome,
+    a.targa,
     pr.data_inizio,
     pr.data_fine,
     pr.importo_totale,
-    p.nome as parcheggio_nome,
+    p.nome AS parcheggio_nome,
     p.indirizzo,
     p.citta,
-    TIMESTAMPDIFF(HOUR, pr.data_inizio, pr.data_fine) as ore_prenotate
+    TIMESTAMPDIFF(HOUR, pr.data_inizio, pr.data_fine) AS ore_prenotate
 FROM prenotazioni pr
 JOIN parcheggi p ON pr.parcheggio_id = p.id
+JOIN utenti u ON pr.id_utente = u.id
+JOIN auto a ON pr.id_auto = a.id
 WHERE pr.stato = 'attiva';
 
 -- ============================================

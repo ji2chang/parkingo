@@ -1,6 +1,8 @@
 -- =====================================================
 -- 1. Inserisci dati servizi
 -- =====================================================
+USE parking_db;
+
 INSERT INTO servizi (nome) VALUES
 ('Coperto'),
 ('Scoperto'),

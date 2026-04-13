@@ -2,6 +2,7 @@
 
 use parkingo\Controller\ParcheggioController;
 
+
 $app->group('/parkings', function ($group) {
     // /cities deve stare prima di /{id} altrimenti FastRoute lo cattura come ID
     $group->get('/cities', ParcheggioController::class . ':getCitta');
