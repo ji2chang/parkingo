@@ -8,19 +8,36 @@ use Firebase\JWT\JWT;
 class UtenteRepository
 {
     /**
-     * Verifica le credenziali e restituisce i dati dell'utente, o null se non valide.
-     * La password è confrontata con password_verify(), quindi nel db va memorizzato
-     * l'hash prodotto da password_hash().
+     * Verifica le credenziali tramite nome utente/email e password e restituisce token + dati utente.
      */
-    public static function verificaCredenziali(string $nome_utente, string $password_hash): ?string
+    public static function verificaCredenziali(string $identifier, string $password): ?array
     {
         $pdo = Connection::get();
-        $stmt = $pdo->prepare('SELECT * FROM utenti WHERE nome_utente = :nome_utente AND password_hash = :password_hash');
-        $stmt->execute(['nome_utente' => $nome_utente,'password_hash' => $password_hash]);
+        
+        // First try to find the user
+        $stmt = $pdo->prepare('SELECT id, nome, cognome, email, nome_utente, password_hash FROM utenti WHERE nome_utente = ?');
+        $stmt->execute([$identifier]);
         $user = $stmt->fetch();
+        
+        // If not found by username, try email
+        if (!$user) {
+            $stmt = $pdo->prepare('SELECT id, nome, cognome, email, nome_utente, password_hash FROM utenti WHERE email = ?');
+            $stmt->execute([$identifier]);
+            $user = $stmt->fetch();
+        }
 
-        if ($user) {
-            return self::generaToken($user['id'], $nome_utente);
+        if ($user && password_verify($password, $user['password_hash'])) {
+            $token = self::generaToken((int)$user['id']);
+            return [
+                'token' => $token,
+                'user' => [
+                    'id' => (int)$user['id'],
+                    'nome' => $user['nome'],
+                    'cognome' => $user['cognome'],
+                    'email' => $user['email'],
+                    'nome_utente' => $user['nome_utente'],
+                ]
+            ];
         }
         return null;
     }
@@ -28,21 +45,23 @@ class UtenteRepository
     public static function creaUtente($dati): bool
     {
         try {
-            // Connessione al DB (usa la tua funzione o istanza PDO)
             $pdo = Connection::get();
 
-            $dati['password'] = password_hash($dati['password'], PASSWORD_DEFAULT);
+            $password_hash = password_hash($dati['password'], PASSWORD_DEFAULT);
 
-            $sql = "INSERT INTO utenti (nome_utente, password, email, nome, cognome)
-                VALUES (:nome_utente, :password, :email, :nome, :cognome)";
+            $sql = "INSERT INTO utenti (nome_utente, password_hash, email, nome, cognome)
+                VALUES (:nome_utente, :password_hash, :email, :nome, :cognome)";
 
             $stmt = $pdo->prepare($sql);
-
-            // Esecuzione
-            return $stmt->execute($dati);
+            return $stmt->execute([
+                'nome_utente' => $dati['username'],
+                'password_hash' => $password_hash,
+                'email' => $dati['email'],
+                'nome' => $dati['firstName'],
+                'cognome' => $dati['lastName'],
+            ]);
 
         } catch (PDOException $e) {
-            // Logga l’errore se necessario
             error_log("Errore creazione utente: " . $e->getMessage());
             return false;
         }
@@ -83,7 +102,39 @@ class UtenteRepository
         }
     }
 
-    private static function generaToken(int $id, string $nome_utente): string
+    public static function getById(int $id): ?array
+    {
+        try {
+            $pdo = Connection::get();
+            $stmt = $pdo->prepare('SELECT id, nome_utente, email, nome, cognome, created_at FROM utenti WHERE id = :id');
+            $stmt->execute(['id' => $id]);
+            $user = $stmt->fetch();
+
+            return $user ?: null;
+        } catch (PDOException $e) {
+            error_log("Errore recupero utente: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public static function updateProfile(int $id, array $data): bool
+    {
+        try {
+            $pdo = Connection::get();
+            $sql = "UPDATE utenti SET nome = :nome, cognome = :cognome WHERE id = :id";
+            $stmt = $pdo->prepare($sql);
+            return $stmt->execute([
+                'nome' => $data['nome'],
+                'cognome' => $data['cognome'],
+                'id' => $id,
+            ]);
+        } catch (PDOException $e) {
+            error_log("Errore aggiornamento profilo: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    private static function generaToken(int $id): string
     {
         $emissione = new \DateTimeImmutable();
         $scadenza = $emissione->modify('+' . JWT_EXPIRE_MINUTES . ' minutes');
@@ -92,8 +143,7 @@ class UtenteRepository
             'iat'  => $emissione->getTimestamp(),   // Issued at: quando è stato emesso
             'exp'  => $scadenza->getTimestamp(),    // Expiration: quando scade
             'data' => [                             // Dati applicativi
-                'id'       => $id,
-                'nome_utente' => $nome_utente,
+                'id' => $id,
             ]
         ];
 

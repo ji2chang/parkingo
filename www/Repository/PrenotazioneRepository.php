@@ -29,6 +29,32 @@ class PrenotazioneRepository {
         return $stmt->fetch(PDO::FETCH_OBJ);
     }
 
+    public function getByUserId(int $userId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT p.*, pa.nome as nome_parcheggio
+             FROM prenotazioni p
+             JOIN parcheggi pa ON p.parcheggio_id = pa.id
+             WHERE p.id_utente = :id_utente
+             ORDER BY p.data_inizio DESC'
+        );
+        $stmt->execute(['id_utente' => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    public function getByCodiceAndUserId(string $codice, int $userId)
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT p.*, pa.nome as nome_parcheggio
+             FROM prenotazioni p
+             JOIN parcheggi pa ON p.parcheggio_id = pa.id
+             WHERE p.codice_prenotazione = :codice
+               AND p.id_utente = :id_utente'
+        );
+        $stmt->execute(['codice' => $codice, 'id_utente' => $userId]);
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
     /**
      * Crea una nuova prenotazione.
      * Corrisponde ai campi NOT NULL definiti nel file 01-init.sql.
@@ -68,10 +94,10 @@ class PrenotazioneRepository {
         // 6. Query di inserimento
         $sql = "INSERT INTO prenotazioni (
                 codice_prenotazione, nome, cognome, targa, email, 
-                telefono, parcheggio_id, data_inizio, data_fine, importo_totale
+                telefono, parcheggio_id, id_utente, id_auto, data_inizio, data_fine, importo_totale
             ) VALUES (
                 :codice_prenotazione, :nome, :cognome, :targa, :email, 
-                :telefono, :parcheggio_id, :inizio, :fine, :importo_totale
+                :telefono, :parcheggio_id, :id_utente, :id_auto, :inizio, :fine, :importo_totale
             )";
         $ok = $this->pdo->prepare($sql)->execute($data->toArray());
         if (!$ok){
@@ -136,8 +162,10 @@ class PrenotazioneRepository {
                     data_fine   = :data_fine,
                     importo_totale = :importo_totale
                 WHERE codice_prenotazione = :codice_prenotazione
-                  AND stato = 'attiva'";
+                  AND stato = 'attiva'
+                  AND id_utente = :id_utente";
 
+        $binds[':id_utente'] = $data->id_utente;
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($binds);
         return $stmt->rowCount() > 0;
@@ -146,15 +174,16 @@ class PrenotazioneRepository {
     /**
      * Soft delete: imposta stato='annullata'.
      */
-    public function delete(string $codice): bool
+    public function delete(string $codice, int $userId): bool
     {
         $sql = "UPDATE prenotazioni 
                 SET stato = 'annullata' 
                 WHERE codice_prenotazione = :codice
-                  AND stato = 'attiva'";
+                  AND stato = 'attiva'
+                  AND id_utente = :id_utente";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['codice' => $codice]);
+        $stmt->execute(['codice' => $codice, 'id_utente' => $userId]);
         return $stmt->rowCount() > 0;
     }
 }

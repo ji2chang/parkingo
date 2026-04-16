@@ -405,6 +405,7 @@ function normalizeParking(p) {
         ? p.posti_disponibili
         : (p.availableSpots ?? p.posti_totali ?? p.totalSpots ?? 0),
     pricePerHour: p.tariffa_oraria ?? p.pricePerHour ?? 0,
+    pricePerDay: p.tariffa_giornaliera ?? (p.tariffa_oraria ?? p.pricePerHour ?? 0) * 24,
     openingTime: p.orario_apertura ?? p.openingTime ?? null,
     closingTime: p.orario_chiusura ?? p.closingTime ?? null,
     open24h: p.aperto_24h ?? p.open24h ?? false,

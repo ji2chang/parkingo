@@ -8,6 +8,15 @@ const client = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
+// Aggiungi il token JWT a ogni richiesta
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
 
 client.interceptors.response.use(
   
@@ -161,10 +170,92 @@ export function deleteParking(id) {
 
 /**
  * GET /api/bookings
- * @returns {Promise<Array>} - list of bookings (admin)
+ * @returns {Promise<Array>} - list of user's bookings
  */
 export function listBookings(params = {}) {
   return client.get('/api/bookings', { params })
+}
+
+/**
+ * POST /api/user/login
+ * @param {Object} body
+ * @param {string} body.username
+ * @param {string} body.password
+ * @returns {Promise<Object>} - { token, user: { id, nome, cognome, email } }
+ */
+export function loginUser(body) {
+  return client.post('/api/user/login', body)
+}
+
+/**
+ * POST /api/user/signin
+ * @param {Object} body
+ * @param {string} body.firstName
+ * @param {string} body.lastName
+ * @param {string} body.username
+ * @param {string} body.email
+ * @param {string} body.password
+ * @returns {Promise<Object>}
+ */
+export function signinUser(body) {
+  return client.post('/api/user/signin', body)
+}
+
+/**
+ * GET /api/user/profile
+ * @returns {Promise<Object>}
+ */
+export function getUserProfile() {
+  return client.get('/api/user/profile')
+}
+
+/**
+ * PATCH /api/user/profile
+ * @param {Object} body
+ * @param {string} body.nome
+ * @param {string} body.cognome
+ * @returns {Promise<Object>}
+ */
+export function updateUserProfile(body) {
+  return client.patch('/api/user/profile', body)
+}
+
+/**
+ * GET /api/cars
+ * @returns {Promise<Array>}
+ */
+export function getUserCars() {
+  return client.get('/api/cars').then(res => res?.cars ?? [])
+}
+
+/**
+ * POST /api/cars
+ * @param {Object} body
+ * @param {string} body.targa
+ * @returns {Promise<Object>}
+ */
+export function createUserCar(body) {
+  return client.post('/api/cars', body).then(res => res?.auto ?? res)
+}
+
+/**
+ * PUT /api/cars/:id
+ * @param {number} id
+ * @param {Object} body
+ * @param {string} body.targa
+ * @returns {Promise<Object>}
+ */
+export function updateUserCar(id, body) {
+  return client.patch(`/api/cars/${id}`, body).then(res => res?.auto ?? res)
+}
+
+/**
+ * DELETE /api/cars/:id
+ * @param {number} id
+ * @returns {Promise<Object>}
+ */
+export function deleteUserCar(id) {
+  return client.delete(`/api/cars/${id}`)
 }
 
 export default {
@@ -181,4 +272,12 @@ export default {
   updateParking,
   deleteParking,
   listBookings,
+  loginUser,
+  signinUser,
+  getUserProfile,
+  updateUserProfile,
+  getUserCars,
+  createUserCar,
+  updateUserCar,
+  deleteUserCar,
 }

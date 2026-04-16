@@ -29,69 +29,122 @@ class UtenteController
     {
         $dati = $request->getParsedBody();
 
-        // Validazione minima: i campi devono esserci
-        if (empty($dati['nome_utente']) || empty($dati['password'])) {
+        if (empty($dati['username']) || empty($dati['password'])) {
             return $this->rispostaJson($response, [
-                'errore' => 'Nome utente e password sono obbligatori'
+                'success' => false,
+                'message' => 'Nome utente e password sono obbligatori'
             ], 400);
         }
-        $passwordHash = password_hash($dati['password'], PASSWORD_BCRYPT);
-        $token = $this->repository->verificaCredenziali($dati['nome_utente'], $passwordHash);
 
-        if ($token === null) {
+        $result = $this->repository->verificaCredenziali($dati['username'], $dati['password']);
+
+        if ($result === null) {
             return $this->rispostaJson($response, [
-                'errore' => 'Credenziali non valide'
+                'success' => false,
+                'message' => 'Nome utente o password non validi'
             ], 401);
         }
 
         return $this->rispostaJson($response, [
-            'token' => $token
+            'success' => true,
+            'data' => $result
         ]);
     }
 
     public function signin(Request $request, Response $response): Response
     {
         $dati = $request->getParsedBody();
-        $required = [
-            'nome_utente', 'password', 'email', 'nome', 'cognome'
-        ];
+        $required = ['email', 'password', 'firstName', 'lastName', 'username'];
+        
         foreach ($required as $field) {
             if (empty($dati[$field])) {
                 return $this->rispostaJson($response, [
-                    'errore' => $field . ' è obbligatorio'
+                    'success' => false,
+                    'message' => $field . ' è obbligatorio'
                 ], 400);
             }
         }
-        if($this->repository->esisteNomeUtente($dati['nome_utente'])){
+
+        if ($this->repository->esisteEmail($dati['email'])) {
             return $this->rispostaJson($response, [
-                'errore' => 'Nome utente esiste già'
-            ]);
+                'success' => false,
+                'message' => 'Email già registrata'
+            ], 400);
         }
-        if($this->repository->esisteEmail($dati['email'])){
+
+        if ($this->repository->esisteNomeUtente($dati['username'])) {
             return $this->rispostaJson($response, [
-                'errore' => 'Email già usato'
-            ]);
+                'success' => false,
+                'message' => 'Nome utente già in uso'
+            ], 400);
         }
+
         $success = $this->repository->creaUtente($dati);
         if ($success) {
             return $this->rispostaJson($response, [
-                'success' => 'Utente creato'
-            ]);
+                'success' => true,
+                'message' => 'Utente creato con successo'
+            ], 201);
         } else {
             return $this->rispostaJson($response, [
-                'errore' => 'Errore creazione utente'
-            ]);
+                'success' => false,
+                'message' => 'Errore durante la creazione dell\'utente'
+            ], 500);
         }
     }
 
     public function profilo(Request $request, Response $response): Response
     {
-        // I dati dell'utente sono stati iniettati dal JwtMiddleware
         $utente = $request->getAttribute('utente');
+        $dati = $this->repository->getById($utente->id);
+
+        if (!$dati) {
+            return $this->rispostaJson($response, [
+                'success' => false,
+                'message' => 'Utente non trovato'
+            ], 404);
+        }
 
         return $this->rispostaJson($response, [
-            'id'       => $utente->id,
-            'username' => $utente->username,
+            'success' => true,
+            'data' => [
+                'id' => $dati['id'],
+                'nome' => $dati['nome'],
+                'cognome' => $dati['cognome'],
+                'email' => $dati['email'],
+                'nome_utente' => $dati['nome_utente'],
+                'data_registrazione' => $dati['created_at'],
+            ]
+        ]);
+    }
+
+    public function updateProfile(Request $request, Response $response): Response
+    {
+        $utente = $request->getAttribute('utente');
+        $dati = $request->getParsedBody();
+
+        if (empty($dati['nome']) || empty($dati['cognome'])) {
+            return $this->rispostaJson($response, [
+                'success' => false,
+                'message' => 'Nome e cognome sono obbligatori'
+            ], 400);
+        }
+
+        $success = $this->repository->updateProfile($utente->id, [
+            'nome' => trim((string)$dati['nome']),
+            'cognome' => trim((string)$dati['cognome']),
+        ]);
+
+        if (!$success) {
+            return $this->rispostaJson($response, [
+                'success' => false,
+                'message' => 'Impossibile aggiornare il profilo'
+            ], 500);
+        }
+
+        return $this->rispostaJson($response, [
+            'success' => true,
+            'message' => 'Profilo aggiornato'
         ]);
     }
 }

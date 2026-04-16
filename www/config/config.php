@@ -7,7 +7,7 @@ const DB_USER = 'parking_user';
 const DB_PASS = 'parkingpassword';
 
 // jwt
-const JWT_SECRET = 'y_TsfdjAcvgjha67jh£g@cV';
+const JWT_SECRET = 'y_TsfdjAcvgjha67jh£g@cVb.a4+.y0UCU=RP$NU4=_qcDhi*c9uc';
 const JWT_ALGO = 'HS256';
 
 const JWT_EXPIRE_MINUTES = 60;

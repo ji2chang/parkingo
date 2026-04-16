@@ -1,41 +1,16 @@
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
 import { MapPin, Star, Car } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Badge } from './ui/Badge'
 import { Button } from './ui/Button'
 import { formatCurrency } from '../utils/format'
-import { getParkingAvailability } from '../services/api'
 
 export function ParkingCard({ parking, index = 0, searchFilters = null }) {
   const navigate = useNavigate()
-  const [availability, setAvailability] = useState({
-    availableSpots: parking.availableSpots,
-    totalSpots: parking.totalSpots,
-    loading: true,
-  })
-
-  useEffect(() => {
-    let mounted = true
-    setAvailability((a) => ({ ...a, loading: true }))
-    getParkingAvailability(parking.id)
-      .then((data) => {
-        if (!mounted) return
-        setAvailability({
-          availableSpots: data.posti_disponibili ?? parking.availableSpots,
-          totalSpots: data.posti_totali ?? parking.totalSpots,
-          loading: false,
-        })
-      })
-      .catch(() => {
-        if (!mounted) return
-        setAvailability((a) => ({ ...a, loading: false }))
-      })
-    return () => { mounted = false }
-  }, [parking.id, parking.availableSpots, parking.totalSpots])
-
-  const ratio = (availability.availableSpots ?? 0) / (availability.totalSpots ?? 1)
+  const availableSpots = parking.availableSpots ?? 0
+  const totalSpots = parking.totalSpots ?? 0
+  const ratio = totalSpots > 0 ? availableSpots / totalSpots : 1
   const availVariant =
     ratio > 0.5 ? 'success' : ratio > 0.2 ? 'warning' : ratio > 0 ? 'danger' : 'danger'
 
@@ -82,7 +57,7 @@ export function ParkingCard({ parking, index = 0, searchFilters = null }) {
         <div className="text-right">
           <Badge variant={availVariant}>
             <Car className="h-3 w-3 mr-1 inline" />
-            {availability.loading ? '...' : `${availability.availableSpots} / ${availability.totalSpots}`}
+            {`${availableSpots} / ${totalSpots}`}
           </Badge>
         </div>
       </div>

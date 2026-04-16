@@ -8,6 +8,8 @@ class Prenotazione implements \ArrayAccess
     public int $id;
     public string $codice_prenotazione;
     public int $parcheggio_id;
+    public int $id_utente;
+    public int $id_auto;
 
     // Dati utente
     public string $nome;
@@ -49,6 +51,8 @@ class Prenotazione implements \ArrayAccess
         return [
             ':codice_prenotazione' => $this->codice_prenotazione,
             ':parcheggio_id'       => $this->parcheggio_id,
+            ':id_utente'           => $this->id_utente,
+            ':id_auto'             => $this->id_auto,
             ':nome'                => $this->nome,
             ':cognome'             => $this->cognome,
             ':targa'               => $this->targa,

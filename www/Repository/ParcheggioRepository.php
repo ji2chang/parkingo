@@ -63,31 +63,34 @@ class ParcheggioRepository {
                           !empty($params['orario_inizio']) && 
                           !empty($params['data_fine']) && 
                           !empty($params['orario_fine']);
-        if (!$useAvailability) {
-            throw new \InvalidArgumentException("Per calcolare la disponibilità, è necessario fornire data_inizio, orario_inizio, data_fine e orario_fine");
-        }
+
         // Costruisci SQL con o senza calcolo disponibilità
-        $availabilitySQL = "posti_disponibili(
+        $availabilitySQL = $useAvailability
+            ? "posti_disponibili(
                             p.id, 
                             :data_inizio, :orario_inizio, 
                             :data_fine, :orario_fine
-                    ) AS posti_disponibili";
+                    ) AS posti_disponibili"
+            : "p.posti_totali AS posti_disponibili";
 
         $sql = "SELECT p.*,
                     (SELECT GROUP_CONCAT(DISTINCT s.nome ORDER BY s.nome SEPARATOR ',')
                             FROM parcheggi_servizi ps
                             JOIN servizi s ON ps.servizio_id = s.id
                             WHERE ps.parcheggio_id = p.id) AS servizi_disponibili,
-                    {$availabilitySQL}
+                    {$availabilitySQL},
+                    (p.tariffa_oraria * 24) AS tariffa_giornaliera
                 FROM parcheggi p
                 WHERE 1=1";
 
         $binds = [];
         
-        $binds[':data_inizio'] = $params['data_inizio'];
-        $binds[':orario_inizio'] = $params['orario_inizio'];
-        $binds[':data_fine'] = $params['data_fine'];
-        $binds[':orario_fine'] = $params['orario_fine'];
+        if ($useAvailability) {
+            $binds[':data_inizio'] = $params['data_inizio'];
+            $binds[':orario_inizio'] = $params['orario_inizio'];
+            $binds[':data_fine'] = $params['data_fine'];
+            $binds[':orario_fine'] = $params['orario_fine'];
+        }
 
         // --- Filtri opzionali ---
         if (!empty($params['query'])) {

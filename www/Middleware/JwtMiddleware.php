@@ -56,7 +56,8 @@ class JwtMiddleware implements MiddlewareInterface
     {
         $response = new Response();
         $response->getBody()->write(json_encode([
-            'errore' => $messaggio
+            'success' => false,
+            'message' => $messaggio
         ]));
         return $response
             ->withHeader('Content-Type', 'application/json')
