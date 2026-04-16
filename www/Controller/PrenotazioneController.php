@@ -89,7 +89,7 @@ class PrenotazioneController
         try {
             // ===== 1. VALIDAZIONE CAMPI OBBLIGATORI =====
             $requiredFields = ['parcheggio_id', 'data_inizio', 'orario_inizio', 'data_fine', 
-                             'orario_fine', 'nome', 'cognome', 'targa', 'email'];
+                             'orario_fine', 'id_auto', 'targa', 'email'];
             
             $missingFields = [];
             foreach ($requiredFields as $field) {
