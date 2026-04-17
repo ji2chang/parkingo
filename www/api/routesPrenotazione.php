@@ -8,5 +8,5 @@ $app->group('/bookings', function ($group) {
     $group->post('', PrenotazioneController::class . ':createPrenotazione')->add(JwtMiddleware::class);
     $group->delete('/{code}', PrenotazioneController::class . ':deletePrenotazione')->add(JwtMiddleware::class);
     $group->patch('/{code}', PrenotazioneController::class . ':updatePrenotazione')->add(JwtMiddleware::class);
-    $group->get('/{code}', PrenotazioneController::class . ':findByCodice');
+    $group->get('/{code}', PrenotazioneController::class . ':findByCodice')->add(JwtMiddleware::class);
 });

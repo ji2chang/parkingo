@@ -87,7 +87,6 @@ class PrenotazioneController
                 'cognome' => $prenotazione->cognome,
                 'targa' => $prenotazione->targa,
                 'email' => $prenotazione->email,
-                'telefono' => $prenotazione->telefono,
                 'data_inizio' => $prenotazione->data_inizio,
                 'data_fine' => $prenotazione->data_fine,
                 'importo_totale' => (float)$prenotazione->importo_totale,

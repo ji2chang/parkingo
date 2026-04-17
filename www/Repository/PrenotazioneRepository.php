@@ -32,7 +32,7 @@ class PrenotazioneRepository {
     public function getByUserId(int $userId): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT p.*, pa.nome as nome_parcheggio,p.nome,p.cognome,a.targa,p.nome,p.email 
+            'SELECT p.*, pa.nome as nome_parcheggio,u.nome,u.cognome,a.targa,u.email 
              FROM prenotazioni p
              JOIN parcheggi pa ON p.parcheggio_id = pa.id
              JOIN utenti u ON u.id = p.id_utente
