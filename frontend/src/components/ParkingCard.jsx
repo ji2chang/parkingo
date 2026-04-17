@@ -8,8 +8,9 @@ import { formatCurrency } from '../utils/format'
 
 export function ParkingCard({ parking, index = 0, searchFilters = null }) {
   const navigate = useNavigate()
-  const ratio = parking.availableSpots / parking.totalSpots
-
+  const availableSpots = parking.availableSpots ?? 0
+  const totalSpots = parking.totalSpots ?? 0
+  const ratio = totalSpots > 0 ? availableSpots / totalSpots : 1
   const availVariant =
     ratio > 0.5 ? 'success' : ratio > 0.2 ? 'warning' : ratio > 0 ? 'danger' : 'danger'
 
@@ -56,7 +57,7 @@ export function ParkingCard({ parking, index = 0, searchFilters = null }) {
         <div className="text-right">
           <Badge variant={availVariant}>
             <Car className="h-3 w-3 mr-1 inline" />
-            {parking.availableSpots} / {parking.totalSpots}
+            {`${availableSpots} / ${totalSpots}`}
           </Badge>
         </div>
       </div>

@@ -46,7 +46,7 @@ class ParcheggioController {
         } catch (\Exception $e) {
             $payload = json_encode([
                 'success' => false,
-                'message' => 'Errore interno del server'
+                'message' => $e->getMessage()
             ]);
 
             $response->getBody()->write($payload);

@@ -29,6 +29,34 @@ class PrenotazioneRepository {
         return $stmt->fetch(PDO::FETCH_OBJ);
     }
 
+    public function getByUserId(int $userId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT p.*, pa.nome as nome_parcheggio,u.nome,u.cognome,a.targa,u.email 
+             FROM prenotazioni p
+             JOIN parcheggi pa ON p.parcheggio_id = pa.id
+             JOIN utenti u ON u.id = p.id_utente
+             JOIN auto a ON a.id = p.id_auto
+             WHERE p.id_utente = :id_utente
+             ORDER BY p.data_inizio DESC'
+        );
+        $stmt->execute(['id_utente' => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    public function getByCodiceAndUserId(string $codice, int $userId)
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT p.*, pa.nome as nome_parcheggio
+             FROM prenotazioni p
+             JOIN parcheggi pa ON p.parcheggio_id = pa.id
+             WHERE p.codice_prenotazione = :codice
+               AND p.id_utente = :id_utente'
+        );
+        $stmt->execute(['codice' => $codice, 'id_utente' => $userId]);
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
     /**
      * Crea una nuova prenotazione.
      * Corrisponde ai campi NOT NULL definiti nel file 01-init.sql.
@@ -55,7 +83,6 @@ class PrenotazioneRepository {
         // 3. Calcolo delle ore tra inizio e fine
         $inizio = new DateTime($data->data_inizio);
         $fine   = new DateTime($data->data_fine);
-
         $diffOre = $inizio->diff($fine)->h + ($inizio->diff($fine)->days * 24);
 
         // 4. Calcolo importo totale
@@ -65,15 +92,23 @@ class PrenotazioneRepository {
         $data->importo_totale = $importoTotale;
         $data->codice_prenotazione = $codice;
 
-        // 6. Query di inserimento
+        // 6. Query di inserimento aggiornata (senza nome, cognome, targa, email, telefono)
         $sql = "INSERT INTO prenotazioni (
-                codice_prenotazione, nome, cognome, targa, email, 
-                telefono, parcheggio_id, data_inizio, data_fine, importo_totale
+                codice_prenotazione, parcheggio_id, id_utente, id_auto, data_inizio, data_fine, importo_totale, note
             ) VALUES (
-                :codice_prenotazione, :nome, :cognome, :targa, :email, 
-                :telefono, :parcheggio_id, :inizio, :fine, :importo_totale
+                :codice_prenotazione, :parcheggio_id, :id_utente, :id_auto, :inizio, :fine, :importo_totale, :note
             )";
-        $ok = $this->pdo->prepare($sql)->execute($data->toArray());
+        $params = [
+            ':codice_prenotazione' => $data->codice_prenotazione,
+            ':parcheggio_id' => $data->parcheggio_id,
+            ':id_utente' => $data->id_utente,
+            ':id_auto' => $data->id_auto,
+            ':inizio' => $data->data_inizio,
+            ':fine' => $data->data_fine,
+            ':importo_totale' => $data->importo_totale,
+            ':note' => $data->note ?? null,
+        ];
+        $ok = $this->pdo->prepare($sql)->execute($params);
         if (!$ok){
             throw new Exception("Inserimento della prenotazione non riuscito");
         }
@@ -136,8 +171,10 @@ class PrenotazioneRepository {
                     data_fine   = :data_fine,
                     importo_totale = :importo_totale
                 WHERE codice_prenotazione = :codice_prenotazione
-                  AND stato = 'attiva'";
+                  AND stato = 'attiva'
+                  AND id_utente = :id_utente";
 
+        $binds[':id_utente'] = $data->id_utente;
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($binds);
         return $stmt->rowCount() > 0;
@@ -146,15 +183,16 @@ class PrenotazioneRepository {
     /**
      * Soft delete: imposta stato='annullata'.
      */
-    public function delete(string $codice): bool
+    public function delete(string $codice, int $userId): bool
     {
         $sql = "UPDATE prenotazioni 
                 SET stato = 'annullata' 
                 WHERE codice_prenotazione = :codice
-                  AND stato = 'attiva'";
+                  AND stato = 'attiva'
+                  AND id_utente = :id_utente";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['codice' => $codice]);
+        $stmt->execute(['codice' => $codice, 'id_utente' => $userId]);
         return $stmt->rowCount() > 0;
     }
 }

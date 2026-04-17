@@ -2,6 +2,7 @@
 -- DATABASE: Sistema Prenotazione Parcheggi
 -- Versione compatibile MariaDB 10.11
 -- ============================================
+DROP DATABASE IF EXISTS parking_db;
 
 -- Crea il database se non esiste
 CREATE DATABASE IF NOT EXISTS parking_db CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
@@ -14,6 +15,7 @@ USE parking_db;
 DROP TABLE IF EXISTS chiusure_parcheggi;
 DROP TABLE IF EXISTS parcheggi;
 DROP TABLE IF EXISTS prenotazioni;
+DROP TABLE IF EXISTS utenti;
 
 
 CREATE TABLE parcheggi (
@@ -39,6 +41,24 @@ CREATE TABLE parcheggi (
 
     INDEX idx_citta (citta)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE utenti (
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL ,
+    nome VARCHAR(100) NOT NULL,
+    cognome VARCHAR(100) NOT NULL,
+    nome_utente VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(100) NOT NULL, 
+    email VARCHAR(255) NOT NULL UNIQUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE auto (
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    targa VARCHAR(20) NOT NULL UNIQUE,
+    id_utente INT,
+    FOREIGN KEY (id_utente) REFERENCES utenti(id)
+);
 
 CREATE TABLE servizi (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -71,12 +91,9 @@ CREATE TABLE prenotazioni (
     codice_prenotazione VARCHAR(21) NOT NULL UNIQUE COMMENT 'Codice univoco stile nanoid',
     parcheggio_id INT NOT NULL,
     
-    -- Dati utente (no autenticazione)
-    nome VARCHAR(100) NOT NULL,
-    cognome VARCHAR(100) NOT NULL,
-    targa VARCHAR(20) NOT NULL,
-    email VARCHAR(255) NULL COMMENT 'Opzionale per conferme',
-    telefono VARCHAR(20),
+    -- Dati utente 
+    id_utente INT not null,
+    id_auto INT not null,
     
     -- Periodo prenotazione
     data_inizio DATETIME NOT NULL,
@@ -94,14 +111,16 @@ CREATE TABLE prenotazioni (
     
     -- Chiavi esterne
     FOREIGN KEY (parcheggio_id) REFERENCES parcheggi(id) ON DELETE RESTRICT,
+    FOREIGN KEY (id_utente) REFERENCES utenti(id),
+    FOREIGN KEY (id_auto) REFERENCES auto(id),
     
     -- Indici per performance
     INDEX idx_codice (codice_prenotazione),
     INDEX idx_parcheggio (parcheggio_id),
     INDEX idx_stato (stato),
-    INDEX idx_periodo (data_inizio, data_fine),
-    INDEX idx_targa (targa),
-    
+    INDEX idx_utente (id_utente),
+    INDEX idx_auto (id_auto),
+
     -- Vincoli (rimosso CURRENT_TIMESTAMP dal CHECK per compatibilità)
     CONSTRAINT chk_periodo CHECK (data_fine > data_inizio)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -272,18 +291,20 @@ DROP VIEW IF EXISTS prenotazioni_attive_dettagli;
 CREATE VIEW prenotazioni_attive_dettagli AS
 SELECT 
     pr.codice_prenotazione,
-    pr.nome,
-    pr.cognome,
-    pr.targa,
+    u.nome,
+    u.cognome,
+    a.targa,
     pr.data_inizio,
     pr.data_fine,
     pr.importo_totale,
-    p.nome as parcheggio_nome,
+    p.nome AS parcheggio_nome,
     p.indirizzo,
     p.citta,
-    TIMESTAMPDIFF(HOUR, pr.data_inizio, pr.data_fine) as ore_prenotate
+    TIMESTAMPDIFF(HOUR, pr.data_inizio, pr.data_fine) AS ore_prenotate
 FROM prenotazioni pr
 JOIN parcheggi p ON pr.parcheggio_id = p.id
+JOIN utenti u ON pr.id_utente = u.id
+JOIN auto a ON pr.id_auto = a.id
 WHERE pr.stato = 'attiva';
 
 -- ============================================

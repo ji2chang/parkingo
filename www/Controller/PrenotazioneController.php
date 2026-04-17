@@ -7,22 +7,26 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use parkingo\Repository\PrenotazioneRepository;
 use parkingo\Repository\ParcheggioRepository;
+use parkingo\Repository\AutoRepository;
 
 class PrenotazioneController
 {
     private PrenotazioneRepository $repository;
     private ParcheggioRepository $parRepo;
+    private AutoRepository $autoRepo;
 
     public function __construct()
     {
         $this->repository = new PrenotazioneRepository();
         $this->parRepo = new ParcheggioRepository();
+        $this->autoRepo = new AutoRepository();
     }
 
     public function findByCodice(Request $request, Response $response, array $args): Response
     {
         $codice = $args['code'];
-        $prenotazione = $this->repository->getByCodice($codice);
+        $utente = $request->getAttribute('utente');
+        $prenotazione = $this->repository->getByCodiceAndUserId($codice, (int)$utente->id);
 
         if (empty($prenotazione)) {
             $payload = json_encode([
@@ -36,7 +40,7 @@ class PrenotazioneController
                 ->withHeader('Content-Type', 'application/json');
         }
 
-        // 格式化数据使其與 createPrenotazione 一致
+        //  createPrenotazione
         $parcheggio_id = $prenotazione->parcheggio_id ?? $prenotazione['parcheggio_id'] ?? null;
         if (!$parcheggio_id) {
             throw new \Exception("Parcheggio ID not found in prenotazione");
@@ -47,18 +51,7 @@ class PrenotazioneController
         $payloadData = [
             'codice' => $prenotazione->codice_prenotazione ?? $prenotazione['codice_prenotazione'] ?? null,
             'codice_prenotazione' => $prenotazione->codice_prenotazione ?? $prenotazione['codice_prenotazione'] ?? null,
-            'nome' => $prenotazione->nome ?? $prenotazione['nome'] ?? null,
-            'cognome' => $prenotazione->cognome ?? $prenotazione['cognome'] ?? null,
-            'targa' => $prenotazione->targa ?? $prenotazione['targa'] ?? null,
-            'email' => $prenotazione->email ?? $prenotazione['email'] ?? null,
-            'telefono' => $prenotazione->telefono ?? $prenotazione['telefono'] ?? null,
-            'customer' => [
-                'firstName' => $prenotazione->nome ?? $prenotazione['nome'] ?? null,
-                'lastName' => $prenotazione->cognome ?? $prenotazione['cognome'] ?? null,
-                'plate' => $prenotazione->targa ?? $prenotazione['targa'] ?? null,
-                'email' => $prenotazione->email ?? $prenotazione['email'] ?? null,
-                'phone' => $prenotazione->telefono ?? $prenotazione['telefono'] ?? null,
-            ],
+            'id_auto' => $prenotazione->id_auto ?? $prenotazione['id_auto'] ?? null,
             'data_inizio' => $prenotazione->data_inizio ?? $prenotazione['data_inizio'] ?? null,
             'data_fine' => $prenotazione->data_fine ?? $prenotazione['data_fine'] ?? null,
             'period' => [
@@ -82,15 +75,41 @@ class PrenotazioneController
             ->withHeader('Content-Type', 'application/json');
     }
 
+    public function listPrenotazioni(Request $request, Response $response): Response
+    {
+        $utente = $request->getAttribute('utente');
+        $prenotazioni = $this->repository->getByUserId((int)$utente->id);
+
+        $data = array_map(function ($prenotazione) {
+            return [
+                'codice' => $prenotazione->codice_prenotazione,
+                'nome' => $prenotazione->nome,
+                'cognome' => $prenotazione->cognome,
+                'targa' => $prenotazione->targa,
+                'email' => $prenotazione->email,
+                'data_inizio' => $prenotazione->data_inizio,
+                'data_fine' => $prenotazione->data_fine,
+                'importo_totale' => (float)$prenotazione->importo_totale,
+                'stato' => $prenotazione->stato,
+                'parcheggio' => [
+                    'id' => $prenotazione->parcheggio_id,
+                    'nome' => $prenotazione->nome_parcheggio ?? null,
+                ],
+            ];
+        }, $prenotazioni);
+
+        $payload = json_encode(['success' => true, 'data' => $data]);
+        $response->getBody()->write($payload);
+        return $response->withStatus(200)->withHeader('Content-Type', 'application/json');
+    }
+
     public function createPrenotazione(Request $request, Response $response, array $args): Response
     {
         $rawData = $request->getParsedBody();
+        $utente = $request->getAttribute('utente');
 
         try {
-            // ===== 1. VALIDAZIONE CAMPI OBBLIGATORI =====
-            $requiredFields = ['parcheggio_id', 'data_inizio', 'orario_inizio', 'data_fine', 
-                             'orario_fine', 'nome', 'cognome', 'targa', 'email'];
-            
+            $requiredFields = ['parcheggio_id', 'data_inizio', 'orario_inizio', 'data_fine', 'orario_fine', 'id_auto'];
             $missingFields = [];
             foreach ($requiredFields as $field) {
                 if (!isset($rawData[$field]) || trim((string)$rawData[$field]) === '') {
@@ -102,8 +121,6 @@ class PrenotazioneController
                 throw new \Exception("Campi obbligatori mancanti: " . implode(', ', $missingFields));
             }
 
-            // ===== 2. FILTRO E PREPARAZIONE DATI =====
-            // Combina data e ora in formato DATETIME
             $dataInizio = trim((string)$rawData['data_inizio']);
             $orarioInizio = trim((string)$rawData['orario_inizio']);
             $dataFine = trim((string)$rawData['data_fine']);
@@ -131,25 +148,25 @@ class PrenotazioneController
                 throw new \Exception("Non è possibile prenotare dal passato");
             }
 
+            $auto = null;
+            if (!empty($rawData['id_auto'])) {
+                $auto = $this->autoRepo->findById((int)$rawData['id_auto'], (int)$utente->id);
+            }
+            if (!$auto) {
+                throw new \Exception('Auto non trovata. Aggiungila al tuo profilo.');
+            }
+
             // ===== 3. PREPARAZIONE ENTITY =====
             $data = [
                 'parcheggio_id' => (int)$rawData['parcheggio_id'],
                 'data_inizio' => $inizio->format('Y-m-d H:i:s'),
                 'data_fine' => $fine->format('Y-m-d H:i:s'),
-                'nome' => trim((string)$rawData['nome']),
-                'cognome' => trim((string)$rawData['cognome']),
-                'targa' => strtoupper(trim((string)$rawData['targa'])), // Uppercase plate
-                'email' => filter_var(trim((string)$rawData['email']), FILTER_VALIDATE_EMAIL),
-                'telefono' => isset($rawData['telefono']) ? trim((string)$rawData['telefono']) : null,
+                'id_utente' => (int)$utente->id,
+                'id_auto' => (int)$auto['id'],
                 'note' => isset($rawData['note']) ? trim((string)$rawData['note']) : null,
             ];
 
-            // Valida email
-            if (!$data['email']) {
-                throw new \Exception("Email non valida");
-            }
-
-            $prenotazione = new Prenotazione($data);
+            $prenotazione = new \parkingo\Entity\Prenotazione($data);
 
             // ===== 4. CREAZIONE PRENOTAZIONE =====
             $result = $this->repository->create($prenotazione);
@@ -160,18 +177,7 @@ class PrenotazioneController
             $payloadData = [
                 'codice' => $result->codice_prenotazione ?? null,
                 'codice_prenotazione' => $result->codice_prenotazione ?? null,
-                'nome' => $result->nome ?? null,
-                'cognome' => $result->cognome ?? null,
-                'targa' => $result->targa ?? null,
-                'email' => $result->email ?? null,
-                'telefono' => $result->telefono ?? null,
-                'customer' => [
-                    'firstName' => $result->nome ?? null,
-                    'lastName' => $result->cognome ?? null,
-                    'plate' => $result->targa ?? null,
-                    'email' => $result->email ?? null,
-                    'phone' => $result->telefono ?? null,
-                ],
+                'id_auto' => $result->id_auto ?? null,
                 'data_inizio' => $result->data_inizio ?? null,
                 'data_fine' => $result->data_fine ?? null,
                 'period' => [
@@ -190,7 +196,6 @@ class PrenotazioneController
             ]);
 
             $response = $response->withStatus(201);
-
         } catch (\PDOException $e) {
             // SQLSTATE 45000 = trigger che blocca l'inserimento per mancanza di posti
             $statusCode = ($e->getCode() === '45000') ? 409 : 500;
@@ -219,9 +224,10 @@ class PrenotazioneController
     public function deletePrenotazione(Request $request, Response $response, array $args): Response
     {
         $codice = $args['code'];
+        $utente = $request->getAttribute('utente');
 
         try {
-            $deleted = $this->repository->delete($codice);
+            $deleted = $this->repository->delete($codice, (int)$utente->id);
 
             if ($deleted) {
                 $payload = json_encode([
@@ -232,7 +238,7 @@ class PrenotazioneController
             } else {
                 $payload = json_encode([
                     'success' => false,
-                    'message' => 'Prenotazione non trovata'
+                    'message' => 'Prenotazione non trovata o non modificabile'
                 ]);
                 $response = $response->withStatus(404);
             }
@@ -255,8 +261,10 @@ class PrenotazioneController
     public function updatePrenotazione(Request $request, Response $response, array $args): Response
     {
         $codice = $args['code'];
+        $utente = $request->getAttribute('utente');
         $params = $request->getParsedBody() ?? [];
         $params['codice_prenotazione'] = $codice;
+        $params['id_utente'] = (int)$utente->id;
         $prenotazione = new Prenotazione($params);
 
         try {

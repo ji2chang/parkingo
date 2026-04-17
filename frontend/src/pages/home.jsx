@@ -7,24 +7,10 @@ import { Card } from '../components/ui/Card'
 const FEATURES = [
   {
     icon: <Search className="h-7 w-7 text-primary-light" />,
-    title: 'Trova il tuo parcheggio',
-    description: 'Cerca tra centinaia di parcheggi vicino a te, filtra per prezzo e servizi.',
-    action: '/search',
-    cta: 'Cerca',
-  },
-  {
-    icon: <MapPin className="h-7 w-7 text-info" />,
-    title: 'Esplora sulla mappa',
-    description: 'Visualizza la disponibilità in tempo reale su una mappa interattiva.',
-    action: '/map',
-    cta: 'Apri mappa',
-  },
-  {
-    icon: <BarChart2 className="h-7 w-7 text-success" />,
-    title: 'Analisi e statistiche',
-    description: 'Monitora le tue prenotazioni, i costi e i trend di utilizzo.',
-    action: '/analytics',
-    cta: 'Vedi analisi',
+    title: 'Prenota il tuo parcheggio',
+    description: 'Cerca e prenota il posto ideale per la tua auto, con un solo click.',
+    action: '/booking',
+    cta: 'Prenota',
   },
 ]
 
@@ -54,11 +40,8 @@ export function HomePage() {
           Nessuna sorpresa, solo comodità.
         </p>
         <div className="flex gap-4 flex-wrap justify-center">
-          <Button size="lg" onClick={() => navigate('/search')} leftIcon={<Search className="h-5 w-5" />}>
-            Cerca parcheggio
-          </Button>
-          <Button size="lg" variant="secondary" onClick={() => navigate('/map')} leftIcon={<MapPin className="h-5 w-5" />}>
-            Vedi mappa
+          <Button size="lg" onClick={() => navigate('/booking')} leftIcon={<Search className="h-5 w-5" />}>
+            Prenotare
           </Button>
         </div>
       </motion.section>
