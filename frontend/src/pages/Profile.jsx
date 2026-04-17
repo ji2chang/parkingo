@@ -83,12 +83,17 @@ export function ProfilePage() {
 
   const handleSaveCar = async () => {
     try {
+      let newCar = null;
       if (editingCar) {
         await updateUserCar(editingCar.id, carForm)
         setCars(cars.map(car => car.id === editingCar.id ? { ...car, ...carForm } : car))
         showToast({ type: 'success', title: 'Successo', description: 'Auto aggiornata' })
       } else {
-        const newCar = await createUserCar(carForm)
+        newCar = await createUserCar(carForm)
+        if (!newCar || !newCar.id) {
+          showToast({ type: 'danger', title: 'Errore', description: 'Impossibile salvare l\'auto' })
+          return
+        }
         setCars([...cars, newCar])
         showToast({ type: 'success', title: 'Successo', description: 'Auto aggiunta' })
       }
