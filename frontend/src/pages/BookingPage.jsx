@@ -8,7 +8,7 @@ import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
-import { getParkingById, getParkingAvailability } from '../services/api'
+import { getParkingById, getParkingAvailability, getUserProfile, getUserCars } from '../services/api'
 import { formatCurrency, formatDateRange } from '../utils/format'
 import { useBooking } from '../hooks/useBooking'
 import { useToast } from '../hooks/useToast'
@@ -24,6 +24,9 @@ export function BookingPage() {
   const [parking, setParking] = useState(null)
   const [parkingError, setParkingError] = useState(false)
   const [availability, setAvailability] = useState({})
+  const [userProfile, setUserProfile] = useState(null)
+  const [userCars, setUserCars] = useState([])
+  const [selectedCarId, setSelectedCarId] = useState('')
   
   // Time states
   const [startDate, setStartDate] = useState('')
@@ -41,6 +44,25 @@ export function BookingPage() {
       .then((data) => setParking(data))
       .catch(() => setParkingError(true))
   }, [parkingId])
+
+  // Carica dati utente
+  useEffect(() => {
+    getUserProfile()
+      .then((res) => {
+        setUserProfile(res)
+      })
+      .catch(() => setUserProfile(null))
+  }, [])
+
+  // Carica auto utente
+  useEffect(() => {
+    getUserCars()
+      .then((cars) => {
+        setUserCars(cars)
+        if (cars.length > 0) setSelectedCarId(cars[0].id)
+      })
+      .catch(() => setUserCars([]))
+  }, [])
 
   // Initialize time from SearchPage or set defaults
   useEffect(() => {
@@ -161,6 +183,14 @@ export function BookingPage() {
     )
   }
 
+  if (userProfile === null) {
+    return (
+      <div className="glass-panel rounded-3xl border border-white/10 p-10 text-center">
+        <p className="text-white/40 text-lg">Caricamento dati utente…</p>
+      </div>
+    )
+  }
+
   async function onSubmit(data) {
     if (!isDateValid()) {
       showToast({
@@ -170,7 +200,6 @@ export function BookingPage() {
       })
       return
     }
-    
     setLoading(true)
     const body = {
       parcheggio_id: parkingId,
@@ -178,10 +207,10 @@ export function BookingPage() {
       orario_inizio: startHour,
       data_fine: endDate,
       orario_fine: endHour,
-      targa: data.plate,
-      nome: data.firstName,
-      cognome: data.lastName,
-      email: data.email,
+      id_auto: selectedCarId,
+      nome: userProfile?.nome,
+      cognome: userProfile?.cognome,
+      email: userProfile?.email,
       telefono: data.phone ?? '',
       note: data.note ?? '',
     }
@@ -243,38 +272,43 @@ export function BookingPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="lg:col-span-2 space-y-6">
           <Card title="Dati personali">
             <div className="grid gap-4 sm:grid-cols-2">
-              <Input
-                label="Nome"
-                required
-                {...register('firstName', { required: 'Campo obbligatorio' })}
-                error={errors.firstName?.message}
-                leftIcon={<User className="h-4 w-4" />}
-              />
-              <Input
-                label="Cognome"
-                required
-                {...register('lastName', { required: 'Campo obbligatorio' })}
-                error={errors.lastName?.message}
-              />
-              <Input
-                label="Email"
-                type="email"
-                required
-                className="sm:col-span-2"
-                {...register('email', {
-                  required: 'Campo obbligatorio',
-                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Email non valida' },
-                })}
-                error={errors.email?.message}
-              />
-              <Input
-                label="Targa"
-                placeholder="XX 000 XX"
-                required
-                {...register('plate', { required: 'Campo obbligatorio' })}
-                error={errors.plate?.message}
-                leftIcon={<Car className="h-4 w-4" />}
-              />
+              {/* Nome */}
+              <div>
+                <label className="text-sm font-medium text-white/80">Nome</label>
+                <div className="w-full rounded-2xl border bg-white/5 px-4 py-3 text-white border-white/10">
+                  {userProfile?.nome || '-'}
+                </div>
+              </div>
+              {/* Cognome */}
+              <div>
+                <label className="text-sm font-medium text-white/80">Cognome</label>
+                <div className="w-full rounded-2xl border bg-white/5 px-4 py-3 text-white border-white/10">
+                  {userProfile?.cognome || '-'}
+                </div>
+              </div>
+              {/* Email */}
+              <div className="sm:col-span-2">
+                <label className="text-sm font-medium text-white/80">Email</label>
+                <div className="w-full rounded-2xl border bg-white/5 px-4 py-3 text-white border-white/10">
+                  {userProfile?.email || '-'}
+                </div>
+              </div>
+              {/* Auto */}
+              <div className="sm:col-span-2">
+                <label className="text-sm font-medium text-white/80">Auto</label>
+                <select
+                  className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white"
+                  style={{ colorScheme: 'dark' }}
+                  value={selectedCarId}
+                  onChange={e => setSelectedCarId(e.target.value)}
+                  required
+                >
+                  {userCars.length === 0 && <option value="">Nessuna auto</option>}
+                  {userCars.map(car => (
+                    <option key={car.id} value={car.id}>{car.targa}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </Card>
 

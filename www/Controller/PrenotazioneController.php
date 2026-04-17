@@ -121,7 +121,7 @@ class PrenotazioneController
         $utente = $request->getAttribute('utente');
 
         try {
-            $requiredFields = ['parcheggio_id', 'data_inizio', 'orario_inizio', 'data_fine', 'orario_fine', 'targa', 'email'];
+            $requiredFields = ['parcheggio_id', 'data_inizio', 'orario_inizio', 'data_fine', 'orario_fine', 'id_auto'];
             $missingFields = [];
             foreach ($requiredFields as $field) {
                 if (!isset($rawData[$field]) || trim((string)$rawData[$field]) === '') {
@@ -160,7 +160,6 @@ class PrenotazioneController
                 throw new \Exception("Non è possibile prenotare dal passato");
             }
 
-            $targa = strtoupper(trim((string)$rawData['targa']));
             $auto = null;
             if (!empty($rawData['id_auto'])) {
                 $auto = $this->autoRepo->findById((int)$rawData['id_auto'], (int)$utente->id);
@@ -179,18 +178,8 @@ class PrenotazioneController
                 'data_fine' => $fine->format('Y-m-d H:i:s'),
                 'id_utente' => (int)$utente->id,
                 'id_auto' => (int)$auto['id'],
-                'nome' => trim((string)$rawData['nome']),
-                'cognome' => trim((string)$rawData['cognome']),
-                'targa' => $targa,
-                'email' => filter_var(trim((string)$rawData['email']), FILTER_VALIDATE_EMAIL),
-                'telefono' => isset($rawData['telefono']) ? trim((string)$rawData['telefono']) : null,
                 'note' => isset($rawData['note']) ? trim((string)$rawData['note']) : null,
             ];
-
-            // Valida email
-            if (!$data['email']) {
-                throw new \Exception("Email non valida");
-            }
 
             $prenotazione = new Prenotazione($data);
 
