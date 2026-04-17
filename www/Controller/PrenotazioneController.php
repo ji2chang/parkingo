@@ -51,18 +51,7 @@ class PrenotazioneController
         $payloadData = [
             'codice' => $prenotazione->codice_prenotazione ?? $prenotazione['codice_prenotazione'] ?? null,
             'codice_prenotazione' => $prenotazione->codice_prenotazione ?? $prenotazione['codice_prenotazione'] ?? null,
-            'nome' => $prenotazione->nome ?? $prenotazione['nome'] ?? null,
-            'cognome' => $prenotazione->cognome ?? $prenotazione['cognome'] ?? null,
-            'targa' => $prenotazione->targa ?? $prenotazione['targa'] ?? null,
-            'email' => $prenotazione->email ?? $prenotazione['email'] ?? null,
-            'telefono' => $prenotazione->telefono ?? $prenotazione['telefono'] ?? null,
-            'customer' => [
-                'firstName' => $prenotazione->nome ?? $prenotazione['nome'] ?? null,
-                'lastName' => $prenotazione->cognome ?? $prenotazione['cognome'] ?? null,
-                'plate' => $prenotazione->targa ?? $prenotazione['targa'] ?? null,
-                'email' => $prenotazione->email ?? $prenotazione['email'] ?? null,
-                'phone' => $prenotazione->telefono ?? $prenotazione['telefono'] ?? null,
-            ],
+            'id_auto' => $prenotazione->id_auto ?? $prenotazione['id_auto'] ?? null,
             'data_inizio' => $prenotazione->data_inizio ?? $prenotazione['data_inizio'] ?? null,
             'data_fine' => $prenotazione->data_fine ?? $prenotazione['data_fine'] ?? null,
             'period' => [
