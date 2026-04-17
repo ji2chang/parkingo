@@ -81,7 +81,6 @@ class PrenotazioneRepository {
         // 3. Calcolo delle ore tra inizio e fine
         $inizio = new DateTime($data->data_inizio);
         $fine   = new DateTime($data->data_fine);
-
         $diffOre = $inizio->diff($fine)->h + ($inizio->diff($fine)->days * 24);
 
         // 4. Calcolo importo totale
@@ -91,15 +90,23 @@ class PrenotazioneRepository {
         $data->importo_totale = $importoTotale;
         $data->codice_prenotazione = $codice;
 
-        // 6. Query di inserimento
+        // 6. Query di inserimento aggiornata (senza nome, cognome, targa, email, telefono)
         $sql = "INSERT INTO prenotazioni (
-                codice_prenotazione, nome, cognome, targa, email, 
-                telefono, parcheggio_id, id_utente, id_auto, data_inizio, data_fine, importo_totale
+                codice_prenotazione, parcheggio_id, id_utente, id_auto, data_inizio, data_fine, importo_totale, note
             ) VALUES (
-                :codice_prenotazione, :nome, :cognome, :targa, :email, 
-                :telefono, :parcheggio_id, :id_utente, :id_auto, :inizio, :fine, :importo_totale
+                :codice_prenotazione, :parcheggio_id, :id_utente, :id_auto, :inizio, :fine, :importo_totale, :note
             )";
-        $ok = $this->pdo->prepare($sql)->execute($data->toArray());
+        $params = [
+            ':codice_prenotazione' => $data->codice_prenotazione,
+            ':parcheggio_id' => $data->parcheggio_id,
+            ':id_utente' => $data->id_utente,
+            ':id_auto' => $data->id_auto,
+            ':inizio' => $data->data_inizio,
+            ':fine' => $data->data_fine,
+            ':importo_totale' => $data->importo_totale,
+            ':note' => $data->note ?? null,
+        ];
+        $ok = $this->pdo->prepare($sql)->execute($params);
         if (!$ok){
             throw new Exception("Inserimento della prenotazione non riuscito");
         }

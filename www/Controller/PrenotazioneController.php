@@ -165,10 +165,7 @@ class PrenotazioneController
                 $auto = $this->autoRepo->findById((int)$rawData['id_auto'], (int)$utente->id);
             }
             if (!$auto) {
-                $auto = $this->autoRepo->findByTargaAndUser($targa, (int)$utente->id);
-            }
-            if (!$auto) {
-                throw new \Exception('Auto non trovata. Aggiungila al tuo profilo o usa una targa già registrata.');
+                throw new \Exception('Auto non trovata. Aggiungila al tuo profilo.');
             }
 
             // ===== 3. PREPARAZIONE ENTITY =====
@@ -181,7 +178,7 @@ class PrenotazioneController
                 'note' => isset($rawData['note']) ? trim((string)$rawData['note']) : null,
             ];
 
-            $prenotazione = new Prenotazione($data);
+            $prenotazione = new \parkingo\Entity\Prenotazione($data);
 
             // ===== 4. CREAZIONE PRENOTAZIONE =====
             $result = $this->repository->create($prenotazione);
@@ -192,18 +189,7 @@ class PrenotazioneController
             $payloadData = [
                 'codice' => $result->codice_prenotazione ?? null,
                 'codice_prenotazione' => $result->codice_prenotazione ?? null,
-                'nome' => $result->nome ?? null,
-                'cognome' => $result->cognome ?? null,
-                'targa' => $result->targa ?? null,
-                'email' => $result->email ?? null,
-                'telefono' => $result->telefono ?? null,
-                'customer' => [
-                    'firstName' => $result->nome ?? null,
-                    'lastName' => $result->cognome ?? null,
-                    'plate' => $result->targa ?? null,
-                    'email' => $result->email ?? null,
-                    'phone' => $result->telefono ?? null,
-                ],
+                'id_auto' => $result->id_auto ?? null,
                 'data_inizio' => $result->data_inizio ?? null,
                 'data_fine' => $result->data_fine ?? null,
                 'period' => [
@@ -222,7 +208,6 @@ class PrenotazioneController
             ]);
 
             $response = $response->withStatus(201);
-
         } catch (\PDOException $e) {
             // SQLSTATE 45000 = trigger che blocca l'inserimento per mancanza di posti
             $statusCode = ($e->getCode() === '45000') ? 409 : 500;
