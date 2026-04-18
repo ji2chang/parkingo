@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, useParams, Link } from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -15,20 +15,29 @@ export function ConfirmationPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { showToast } = useToast()
-  const { bookingDetails } = useBooking()
+  const { bookingDetails, error } = useBooking()
   const [previewOpen, setPreviewOpen] = useState(false)
   const booking = location.state?.booking || bookingDetails
 
-  if (!booking) {
+  // Gestione caso: utente non ha permesso di visualizzare la prenotazione
+  if (!booking || booking.success === false) {
     return (
       <div className="glass-panel rounded-3xl border border-white/10 p-10 text-center">
-        <p className="text-xl font-semibold">Nessuna prenotazione trovata</p>
+        <p className="text-xl font-semibold text-red-400">Non hai il permesso di visualizzare questa prenotazione.</p>
         <Button className="mt-6" onClick={() => navigate('/search')}>
           Torna alla ricerca
         </Button>
       </div>
     )
   }
+
+  // Esempio di gestione errore cancellazione (da usare dove serve, es: in una funzione handleCancel)
+  // async function handleCancel() {
+  //   const ok = await removeBooking(code)
+  //   if (!ok) {
+  //     showToast({ type: 'danger', title: 'Errore', description: 'Impossibile cancellare la prenotazione.' })
+  //   }
+  // }
 
   const copyCode = async () => {
     await navigator.clipboard.writeText(code)

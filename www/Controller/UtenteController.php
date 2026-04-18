@@ -25,6 +25,20 @@ class UtenteController
             ->withStatus($status);
     }
 
+    private function checkAccess($utente, $targetUserId = null, $allowAdmin = true): void
+    {
+        // Se l'utente è admin e l'azione è permessa agli admin, consenti
+        if ($utente->ruolo === 'Admin' && $allowAdmin) {
+            return;
+        }
+        // Se l'utente è user e sta agendo su se stesso
+        if ($utente->ruolo === 'User' && ($targetUserId === null || $utente->id == $targetUserId)) {
+            return;
+        }
+        // Altrimenti accesso negato
+        throw new \Exception('Accesso negato', 403);
+    }
+
     public function login(Request $request, Response $response): Response
     {
         $dati = $request->getParsedBody();
@@ -53,6 +67,15 @@ class UtenteController
 
     public function signin(Request $request, Response $response): Response
     {
+        $utente = $request->getAttribute('utente');
+        // Solo utenti non autenticati possono registrarsi, oppure nessuno (se vuoi bloccare anche agli admin)
+        if ($utente && $utente->ruolo === 'Admin') {
+            return $this->rispostaJson($response, [
+                'success' => false,
+                'message' => 'Gli admin non possono creare utenti.'
+            ], 403);
+        }
+
         $dati = $request->getParsedBody();
         $required = ['email', 'password', 'firstName', 'lastName', 'username'];
         
@@ -96,6 +119,14 @@ class UtenteController
     public function profilo(Request $request, Response $response): Response
     {
         $utente = $request->getAttribute('utente');
+        try {
+            $this->checkAccess($utente, $utente->id); // Solo se stesso o admin
+        } catch (\Exception $e) {
+            return $this->rispostaJson($response, [
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 403);
+        }
         $dati = $this->repository->getById($utente->id);
 
         if (!$dati) {
@@ -121,6 +152,14 @@ class UtenteController
     public function updateProfile(Request $request, Response $response): Response
     {
         $utente = $request->getAttribute('utente');
+        try {
+            $this->checkAccess($utente, $utente->id); // Solo se stesso o admin
+        } catch (\Exception $e) {
+            return $this->rispostaJson($response, [
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 403);
+        }
         $dati = $request->getParsedBody();
 
         if (empty($dati['nome']) || empty($dati['cognome'])) {
