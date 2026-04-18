@@ -68,15 +68,8 @@ export function SearchPage() {
 
   const handleEndDateChange = (e) => {
     const newEndDate = e.target.value
-    if (newEndDate && startDate && newEndDate < startDate) {
-      showToast({
-        type: 'warning',
-        title: 'Errore',
-        description: 'La data di fine non può essere prima della data di inizio'
-      })
-      return
-    }
     setEndDate(newEndDate)
+    // Non mostrare più l'errore qui
   }
 
   const fetchResults = useCallback(
@@ -139,13 +132,25 @@ export function SearchPage() {
 )
 
   // Carica al mount e quando cambiano i filtri (debounce leggero)
-  useEffect(() => {
+  // useEffect(() => {
+  //   if (!startDate || !startHour || !endDate || !endHour) return
+  //   const t = setTimeout(() => fetchResults(), 400)
+  //   return () => clearTimeout(t)
+  // }, [query, city, maxPrice, amenities, startDate, startHour, endDate, endHour])
 
-    if (!startDate || !startHour || !endDate || !endHour) return
-
-    const t = setTimeout(() => fetchResults(), 400)
-    return () => clearTimeout(t)
-  }, [query, city, maxPrice, amenities, startDate, startHour, endDate, endHour])
+  // Nuovo: ricerca solo onBlur dei campi data/ora
+  function handleStartDateBlur() {
+    if (isDateValid()) fetchResults()
+  }
+  function handleStartHourBlur() {
+    if (isDateValid()) fetchResults()
+  }
+  function handleEndDateBlur() {
+    if (isDateValid()) fetchResults()
+  }
+  function handleEndHourBlur() {
+    if (isDateValid()) fetchResults()
+  }
 
   // Refresh results when a booking is created, cancelled, or updated (availability may have changed)
   useBookingRefresh([BOOKING_EVENTS.CREATED, BOOKING_EVENTS.CANCELLED, BOOKING_EVENTS.UPDATED], () => {
@@ -215,9 +220,17 @@ export function SearchPage() {
           >
             Filtri
           </Button>
-          <Button variant="ghost" leftIcon={<Bookmark className="h-4 w-4" />} onClick={handleSaveSearch}>
-            Salva ricerca
+          <Button
+            variant="primary"
+            leftIcon={<Search className="h-4 w-4" />}
+            onClick={fetchResults}
+            disabled={!isDateValid()}
+          >
+            Cerca
           </Button>
+          {/* <Button variant="ghost" leftIcon={<Bookmark className="h-4 w-4" />} onClick={handleSaveSearch}>
+            Salva ricerca
+          </Button> */}
           {hasFilters && (
             <Button variant="ghost" leftIcon={<X className="h-4 w-4" />} onClick={reset}>
               Reset

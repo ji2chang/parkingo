@@ -94,14 +94,14 @@ class ParcheggioRepository {
 
         // --- Filtri opzionali ---
         if (!empty($params['query'])) {
-            $sql .= " AND (p.nome LIKE :query_nome OR p.indirizzo LIKE :query_indirizzo)";
-            $binds[':query_nome'] = '%' . $params['query'] . '%';
-            $binds[':query_indirizzo'] = '%' . $params['query'] . '%';
+            $sql .= " AND (LOWER(p.nome) LIKE :query_nome OR LOWER(p.indirizzo) LIKE :query_indirizzo)";
+            $binds[':query_nome'] = '%' . strtolower($params['query']) . '%';
+            $binds[':query_indirizzo'] = '%' . strtolower($params['query']) . '%';
         }
 
         if (!empty($params['citta'])) {
-            $sql .= " AND p.citta = :citta";
-            $binds[':citta'] = $params['citta'];
+            $sql .= " AND LOWER(p.citta) LIKE :citta";
+            $binds[':citta'] = strtolower($params['citta']) . '%';
         }
 
         if (!empty($params['servizi'])) {
