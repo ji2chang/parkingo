@@ -49,7 +49,7 @@ CREATE TABLE utenti (
     nome_utente VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(100) NOT NULL, 
     email VARCHAR(255) NOT NULL UNIQUE,
-    ruolo ENUM('User', 'ParkingAdmin', 'SystemAdmin') NOT NULL DEFAULT 'User', -- questo serve per gestire i permessi, lascia stare
+    ruolo ENUM('User', 'Admin') NOT NULL DEFAULT 'User', -- questo serve per gestire i permessi, lascia stare
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
