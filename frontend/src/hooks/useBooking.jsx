@@ -73,6 +73,11 @@ export function BookingProvider({ children }) {
     setError(null)
     try {
       const result = await getBooking(code)
+      if (result && result.success === false) {
+        setError(result.message || 'Prenotazione non trovata')
+        setBookingDetails(null)
+        return null
+      }
       // Ensure booking contains parking details; if not, fetch them
       if ((!result.parking && !result.parcheggio) && (result.parcheggio_id || result.parcheggioId || result.parking_id)) {
         const pid = result.parcheggio_id ?? result.parcheggioId ?? result.parking_id
