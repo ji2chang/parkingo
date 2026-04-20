@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { createBooking, getBooking, cancelBooking as apiCancelBooking, updateBooking } from '../services/api'
-import { getParkingById } from '../services/api'
 import { emitBookingEvent, BOOKING_EVENTS } from './useBookingRefresh'
 
 const BookingContext = createContext(null)
@@ -73,30 +72,17 @@ export function BookingProvider({ children }) {
     setError(null)
     try {
       const result = await getBooking(code)
-      if (result && result.success === false) {
-        setError(result.message || 'Prenotazione non trovata')
-        setBookingDetails(null)
+      if (!result || result.success === false) {
+        setError(result?.message || 'Prenotazione non trovata')
+        setBookingDetails(result)
         return null
       }
-      // Ensure booking contains parking details; if not, fetch them
-      if ((!result.parking && !result.parcheggio) && (result.parcheggio_id || result.parcheggioId || result.parking_id)) {
-        const pid = result.parcheggio_id ?? result.parcheggioId ?? result.parking_id
-        try {
-          const p = await getParkingById(pid)
-          if (p) {
-            // attach under both keys for compatibility
-            result.parking = p
-            result.parcheggio = p
-          }
-        } catch (e) {
-          // ignore parking fetch error
-        }
-      }
-
+      // result.success === true
       setBookingDetails(result)
       setBookings((prev) => {
-        const exists = prev.find((b) => b.codice === result.codice)
-        const next = exists ? prev.map((b) => (b.codice === result.codice ? result : b)) : [result, ...prev]
+        const codice = result.data?.codice || code
+        const exists = prev.find((b) => b.codice === codice)
+        const next = exists ? prev.map((b) => (b.codice === codice ? result.data : b)) : [result.data, ...prev]
         saveToStorage(next)
         return next
       })

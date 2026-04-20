@@ -15,12 +15,42 @@ export function ConfirmationPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { showToast } = useToast()
-  const { bookingDetails, error } = useBooking()
+  const { bookingDetails, error, loading, fetchBooking } = useBooking()
   const [previewOpen, setPreviewOpen] = useState(false)
-  const booking = location.state?.booking || bookingDetails
 
-  // Gestione caso: utente non ha permesso di visualizzare la prenotazione
-  if (!booking || booking.success === false) {
+  // Effettua la fetch solo qui, in modo sicuro
+  useEffect(() => {
+    if (code) fetchBooking(code)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code])
+
+  const booking = location.state?.booking || (bookingDetails && bookingDetails.success ? bookingDetails.data : null)
+
+  // Tutti gli hook sono chiamati prima di qualsiasi return condizionale
+
+  // Gestione caricamento
+  if (loading) {
+    return (
+      <div className="glass-panel rounded-3xl border border-white/10 p-10 text-center">
+        <p className="text-xl font-semibold text-white/80">Caricamento in corso...</p>
+      </div>
+    )
+  }
+
+  // Gestione errore generico
+  if (error) {
+    return (
+      <div className="glass-panel rounded-3xl border border-white/10 p-10 text-center">
+        <p className="text-xl font-semibold text-red-400">{error}</p>
+        <Button className="mt-6" onClick={() => navigate('/search')}>
+          Torna alla ricerca
+        </Button>
+      </div>
+    )
+  }
+
+  // Gestione caso: utente non ha permesso di visualizzare la prenotazione o dati non disponibili
+  if (!booking) {
     return (
       <div className="glass-panel rounded-3xl border border-white/10 p-10 text-center">
         <p className="text-xl font-semibold text-red-400">Non hai il permesso di visualizzare questa prenotazione.</p>

@@ -46,6 +46,7 @@ require __DIR__ . '/routesAnalytics.php';
 require __DIR__ . '/routesUtente.php';
 require __DIR__ . '/routesAuto.php';
 require __DIR__ . '/routesPrenotazione.php';
+require __DIR__ . '/routesAdmin.php';
 
 $protectedRoutes = ['/analytics', '/bookings'];
 

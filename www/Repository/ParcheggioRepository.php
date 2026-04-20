@@ -245,4 +245,13 @@ class ParcheggioRepository {
         $stmt = $this->pdo->query('SELECT DISTINCT citta FROM parcheggi ORDER BY citta ASC');
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
+
+    public function cancellaParcheggio(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM parcheggi WHERE id = :id');
+        $stmt->execute([':id' => $id]);
+
+        // rowCount() restituisce il numero di righe eliminate
+        return $stmt->rowCount() > 0;
+    }
 }

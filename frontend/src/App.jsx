@@ -58,9 +58,7 @@ export default function App() {
                   }
                 />
                 <Route path="admin" element={
-                  <ProtectedRoute>
                     <AdminDashboard />
-                  </ProtectedRoute>
                 } />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>

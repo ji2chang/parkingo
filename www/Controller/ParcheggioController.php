@@ -200,4 +200,30 @@ class ParcheggioController {
                 ->withHeader('Content-Type', 'application/json');
         }
     }
+
+    public function cancellazione(Request $request, Response $response, array $args): Response
+    {
+        $id = (int) $args['id'];
+        if($this->repository->cancellaParcheggio($id)){
+            $payload = json_encode([
+                'success' => true,
+                'data' => [
+                    'id' => $id
+                ]
+            ]);
+            $response->getBody()->write($payload);
+            return $response
+                ->withStatus(200)
+                ->withHeader('Content-Type', 'application/json');
+        } else {
+            $payload = json_encode([
+                'success' => false,
+                'message' => 'Parcheggio non trovato'
+            ]);
+            $response->getBody()->write($payload);
+            return $response
+                ->withStatus(500)
+                ->withHeader('Content-Type', 'application/json');
+        }
+    }
 }
