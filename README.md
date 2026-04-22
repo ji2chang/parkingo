@@ -49,7 +49,7 @@ Il database parking_db è organizzato in questo modo:
    docker compose up -d
 4. Puoi trovare le API all'indirizzo: http://localhost:9080/api/
 
-## Come sono gli api?
+## Come sono le api?
 ritornano dei json di formato
 {
    success : false,
