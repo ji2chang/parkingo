@@ -135,3 +135,4 @@ Esegui `npm run build` per generare `dist/` e pubblica su hosting statico (Verce
 - fix scritte numero parcheggi
 - lavoro backend utente ruolo
 - controllo email front e back
+- controllo di accesso per la pagina admin
