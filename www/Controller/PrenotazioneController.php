@@ -22,7 +22,7 @@ class PrenotazioneController
         $this->autoRepo = new AutoRepository();
     }
 
-    private function checkAccess($utente, $targetUserId = null): void
+    private static function checkAccess($utente, $targetUserId = null): void
     {
         if ($utente->ruolo === 'Admin') {
             return;

@@ -527,7 +527,7 @@ export function AdminDashboard() {
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user') || 'null')
-        if (!user || user.ruolo !== 'Admin') {
+        if (!user) {
             window.location.href = '/login'
         }
     }, [])

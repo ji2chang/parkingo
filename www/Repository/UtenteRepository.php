@@ -15,19 +15,12 @@ class UtenteRepository
         $pdo = Connection::get();
         
         // First try to find the user
-        $stmt = $pdo->prepare('SELECT id, nome, cognome, email, nome_utente, password_hash FROM utenti WHERE nome_utente = ?');
+        $stmt = $pdo->prepare('SELECT id, nome, cognome, ruolo, email, nome_utente, password_hash FROM utenti WHERE nome_utente = ?');
         $stmt->execute([$identifier]);
         $user = $stmt->fetch();
-        
-        // If not found by username, try email
-        if (!$user) {
-            $stmt = $pdo->prepare('SELECT id, nome, cognome, email, nome_utente, password_hash FROM utenti WHERE email = ?');
-            $stmt->execute([$identifier]);
-            $user = $stmt->fetch();
-        }
 
         if ($user && password_verify($password, $user['password_hash'])) {
-            $token = self::generaToken((int)$user['id']);
+            $token = self::generaToken($user);
             return [
                 'token' => $token,
                 'user' => [
@@ -134,7 +127,7 @@ class UtenteRepository
         }
     }
 
-    private static function generaToken(int $id): string
+    private static function generaToken($user): string
     {
         $emissione = new \DateTimeImmutable();
         $scadenza = $emissione->modify('+' . JWT_EXPIRE_MINUTES . ' minutes');
@@ -143,7 +136,8 @@ class UtenteRepository
             'iat'  => $emissione->getTimestamp(),   // Issued at: quando è stato emesso
             'exp'  => $scadenza->getTimestamp(),    // Expiration: quando scade
             'data' => [                             // Dati applicativi
-                'id' => $id,
+                'id' => (int)$user['id'],
+                'ruolo' => $user['ruolo']
             ]
         ];
 
