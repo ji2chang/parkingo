@@ -8,5 +8,4 @@ $app->group('/parkings', function ($group) use ($jwt){
     $group->get('', ParcheggioController::class . ':findAll');
     $group->get('/{id:[0-9]+}', ParcheggioController::class . ':findById');
     $group->get('/{id:[0-9]+}/availability', ParcheggioController::class . ':getAvailability');
-    $group->delete('/{id:[0-9]+}', ParcheggioController::class . ':deleteParcheggio')->add($jwt);
 });
