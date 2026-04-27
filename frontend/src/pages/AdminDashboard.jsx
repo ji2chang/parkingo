@@ -7,9 +7,20 @@ export function AdminDashboard() {
   const [form, setForm] = useState({ nome: '', citta: '', indirizzo: '', posti_totali: '', lat: '', lng: '' })
 
   useEffect(() => {
-    load()
-  }, [])
+    const roleValidate = async () => {
+      const res = await api.getUserProfile();
 
+      const ruolo = res.ruolo;
+      
+      
+      if (ruolo !== "Admin") {
+        window.location.href = '/login'
+      }
+    };
+    roleValidate();
+    load();
+  }, []);
+  
   async function load() {
     setLoading(true)
     try {

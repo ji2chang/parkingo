@@ -99,7 +99,7 @@ class UtenteRepository
     {
         try {
             $pdo = Connection::get();
-            $stmt = $pdo->prepare('SELECT id, nome_utente, email, nome, cognome, created_at FROM utenti WHERE id = :id');
+            $stmt = $pdo->prepare('SELECT id, nome_utente, email, nome, ruolo, cognome, created_at FROM utenti WHERE id = :id');
             $stmt->execute(['id' => $id]);
             $user = $stmt->fetch();
 

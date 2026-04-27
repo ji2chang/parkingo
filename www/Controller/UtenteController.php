@@ -101,7 +101,12 @@ class UtenteController
                 'message' => 'Nome utente già in uso'
             ], 400);
         }
-
+        if(!filter_var($dati['email'], FILTER_VALIDATE_EMAIL)){
+            return $this->rispostaJson($response, [
+                'success' => false,
+                'message' => 'Email non valida'
+            ], 400);
+        }
         $success = $this->repository->creaUtente($dati);
         if ($success) {
             return $this->rispostaJson($response, [
@@ -144,6 +149,7 @@ class UtenteController
                 'cognome' => $dati['cognome'],
                 'email' => $dati['email'],
                 'nome_utente' => $dati['nome_utente'],
+                'ruolo' => $dati['ruolo'],
                 'data_registrazione' => $dati['created_at'],
             ]
         ]);

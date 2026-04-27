@@ -129,10 +129,5 @@ In assenza di backend, il layer `src/utils/api.js` usa fallback/mock data per ma
 Esegui `npm run build` per generare `dist/` e pubblica su hosting statico (Vercel, Netlify, S3, ecc.).
 
 ## To do
-- fix bug dati utente profilo
 - ui fix home (aggiunta card resize barra sotto)
-- aggiungere credenziali di prova admin e user
-- fix scritte numero parcheggi
-- lavoro backend utente ruolo
-- controllo email front e back
 - controllo di accesso per la pagina admin

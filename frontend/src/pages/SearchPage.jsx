@@ -373,7 +373,7 @@ export function SearchPage() {
       {/* Results */}
       <div>
         <p className="text-sm text-white/50 mb-4">
-          {loading ? 'Ricerca in corso…' : `${results.length} parcheggio${results.length !== 1 ? 'i' : ''} trovato${results.length !== 1 ? 'i' : ''}`}
+          {loading ? 'Ricerca in corso…' : `${results.length} parcheggi${results.length !== 1 ? '' : 'o'} trovat${results.length !== 1 ? 'i' : 'o'}`}
         </p>
         {loading ? (
           <div className="glass-panel rounded-3xl border border-white/10 p-12 text-center">
