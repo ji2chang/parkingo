@@ -25,18 +25,18 @@ class UtenteController
             ->withStatus($status);
     }
 
-    private function checkAccess($utente, $targetUserId = null, $allowAdmin = true): void
+    public static function checkAccess($utente, $targetUserId = null, $allowAdmin = true): bool
     {
         // Se l'utente è admin e l'azione è permessa agli admin, consenti
         if ($utente->ruolo === 'Admin' && $allowAdmin) {
-            return;
+            return true;
         }
         // Se l'utente è user e sta agendo su se stesso
-        if ($utente->ruolo === 'User' && ($targetUserId === null || $utente->id == $targetUserId)) {
-            return;
+        if ($utente->ruolo === 'User' && $utente->id == $targetUserId) {
+            return true;
         }
         // Altrimenti accesso negato
-        throw new \Exception('Accesso negato', 403);
+        return false;
     }
 
     public function login(Request $request, Response $response): Response

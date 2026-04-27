@@ -5,6 +5,7 @@ namespace parkingo\Controller;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use parkingo\Repository\ParcheggioRepository;
+use parkingo\Controller\UtenteController;
 
 class ParcheggioController {
 
@@ -201,25 +202,50 @@ class ParcheggioController {
         }
     }
 
-    public function cancellazione(Request $request, Response $response, array $args): Response
+    public function deleteParcheggio(Request $request, Response $response, array $args): Response
     {
-        $id = (int) $args['id'];
-        if($this->repository->cancellaParcheggio($id)){
+        $utente = $request->getAttribute('utente');
+        try {
+            $id = (int) $args['id'];
+            if(!UtenteController::checkAccess($utente))
+            $deleted = $this->repository->eliminaParcheggio($id);
+            if (!$deleted) {
+                $payload = json_encode([
+                    'success' => false,
+                    'message' => 'Parcheggio non trovato o non eliminabile'
+                ]);
+
+                $response->getBody()->write($payload);
+                return $response
+                    ->withStatus(404)
+                    ->withHeader('Content-Type', 'application/json');
+            }
+
             $payload = json_encode([
                 'success' => true,
-                'data' => [
-                    'id' => $id
-                ]
+                'message' => 'Parcheggio eliminato con successo'
             ]);
+
             $response->getBody()->write($payload);
             return $response
                 ->withStatus(200)
                 ->withHeader('Content-Type', 'application/json');
-        } else {
+        } catch (\InvalidArgumentException $e) {
             $payload = json_encode([
                 'success' => false,
-                'message' => 'Parcheggio non trovato'
+                'message' => $e->getMessage()
             ]);
+
+            $response->getBody()->write($payload);
+            return $response
+                ->withStatus(400)
+                ->withHeader('Content-Type', 'application/json');
+        } catch (\Exception $e) {
+            $payload = json_encode([
+                'success' => false,
+                'message' => 'Errore interno del server'
+            ]);
+
             $response->getBody()->write($payload);
             return $response
                 ->withStatus(500)
