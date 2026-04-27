@@ -40,7 +40,7 @@ export function BookingProvider({ children }) {
     try {
       const result = await createBooking(body)
       
-      // 验证返回的数据包含有效的 codice
+      // ritorna il codice
       if (!result || (!result.codice_prenotazione && !result.codice)) {
         throw new Error('Errore: risposta del server non valida')
       }
