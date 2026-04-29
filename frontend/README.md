@@ -130,4 +130,3 @@ Esegui `npm run build` per generare `dist/` e pubblica su hosting statico (Verce
 
 ## To do
 - ui fix home (aggiunta card resize barra sotto)
-- controllo di accesso per la pagina admin

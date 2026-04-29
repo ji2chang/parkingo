@@ -23,7 +23,7 @@ class AdminMiddleware implements MiddlewareInterface
         if (!$request->getAttribute('utente')) {
             return $this->rispostaErrore(401,'Token mancante');
         }
-        echo 1;
+        // echo 1;
         // Get the user data from the attribute
         $utente = $request->getAttribute('utente');
 
@@ -32,7 +32,7 @@ class AdminMiddleware implements MiddlewareInterface
         if (!isset($utente['data']['ruolo']) || $utente['data']['ruolo'] !== 'Admin') {
             return $this->rispostaErrore(401,'Utente non autorizzato');
         }
-        echo 2;
+        // echo 2;
 
         // User is admin, proceed to next middleware or route handler
         return $handler->handle($request);
