@@ -16,9 +16,10 @@ export function AdminDashboard() {
       if (ruolo !== "Admin") {
         window.location.href = '/login'
       }
+     load();
+
     };
     roleValidate();
-    load();
   }, []);
   
   async function load() {
