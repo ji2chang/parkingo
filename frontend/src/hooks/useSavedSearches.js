@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 
-const STORAGE_KEY = 'parkly_saved_searches'
+const STORAGE_KEY = 'parkingo_saved_searches'
 
 function load() {
   try {

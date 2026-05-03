@@ -6,7 +6,7 @@ import { emitBookingEvent, BOOKING_EVENTS } from './useBookingRefresh'
 const BookingContext = createContext(null)
 
 export function BookingProvider({ children }) {
-  const STORAGE_KEY = 'parkly_bookings'
+  const STORAGE_KEY = 'parkingo_bookings'
 
   const loadFromStorage = () => {
     try {

@@ -257,7 +257,7 @@ export function MapPage() {
       })
         .bindPopup(makePopupHtml(parking), {
           maxWidth: 260,
-          className: 'parkly-popup',
+          className: 'parkingo-popup',
         })
         .on('click', () => setSelected(parking))
       map._markerLayer.addLayer(marker)

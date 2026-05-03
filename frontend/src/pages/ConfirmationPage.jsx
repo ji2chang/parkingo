@@ -77,7 +77,7 @@ export function ConfirmationPage() {
   const emailPreview = useMemo(
     () => ({
       subject: `Conferma prenotazione ${code}`,
-      body: `Ciao ${booking.customer?.firstName},\n\nLa tua prenotazione presso ${booking.parking?.name} è confermata.\nCheck-in: ${formatDateRange(booking.period?.start, booking.period?.end)}\nTotale stimato: ${formatCurrency(booking.total)}\n\nMostra questo codice all'arrivo: ${code}.\n\nGrazie da Parkly!`,
+      body: `Ciao ${booking.customer?.firstName},\n\nLa tua prenotazione presso ${booking.parking?.name} è confermata.\nCheck-in: ${formatDateRange(booking.period?.start, booking.period?.end)}\nTotale stimato: ${formatCurrency(booking.total)}\n\nMostra questo codice all'arrivo: ${code}.\n\nGrazie da Parkingo!`,
     }),
     [booking, code]
   )
