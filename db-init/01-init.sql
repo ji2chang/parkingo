@@ -162,19 +162,12 @@ DROP PROCEDURE IF EXISTS genera_codice_prenotazione//
 CREATE PROCEDURE genera_codice_prenotazione(OUT nuovo_codice VARCHAR(21))
 BEGIN
     DECLARE codice_esistente INT DEFAULT 1;
-
-    DECLARE caratteri VARCHAR(64)
-        CHARACTER SET utf8
-        COLLATE utf8_general_ci
-        DEFAULT '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
-
+    DECLARE caratteri VARCHAR(64) DEFAULT '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
     DECLARE lunghezza INT DEFAULT 21;
     DECLARE i INT;
 
-    SET nuovo_codice = '' COLLATE utf8_general_ci;
-
     WHILE codice_esistente > 0 DO
-        SET nuovo_codice = '' COLLATE utf8_general_ci;
+        SET nuovo_codice = '';
         SET i = 0;
 
         WHILE i < lunghezza DO

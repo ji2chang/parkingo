@@ -67,10 +67,9 @@ class PrenotazioneRepository {
         // 1. Genero il codice tramite stored procedure
         $stmt = $this->pdo->prepare("CALL genera_codice_prenotazione(@codice)");
         $stmt->execute();
-
         $result = $this->pdo->query("SELECT @codice AS codice")->fetch();
         $codice = $result['codice'];
-
+        
         // 2. Recupero la tariffa oraria del parcheggio
         $stmt = $this->pdo->prepare("SELECT tariffa_oraria FROM parcheggi WHERE id = :id");
         $stmt->execute(['id' => $data->parcheggio_id]);
@@ -84,7 +83,9 @@ class PrenotazioneRepository {
         $inizio = new DateTime($data->data_inizio);
         $fine   = new DateTime($data->data_fine);
         $diffOre = $inizio->diff($fine)->h + ($inizio->diff($fine)->days * 24);
-
+        if($diffOre >= 24){
+            $diffOre = ceil($diffOre / 24) * 24; // Arrotonda per eccesso a giorni interi
+        }
         // 4. Calcolo importo totale
         $importoTotale = $diffOre * $tariffa;
 
@@ -108,6 +109,7 @@ class PrenotazioneRepository {
             ':importo_totale' => $data->importo_totale,
             ':note' => $data->note ?? null,
         ];
+
         $ok = $this->pdo->prepare($sql)->execute($params);
         if (!$ok){
             throw new Exception("Inserimento della prenotazione non riuscito");
