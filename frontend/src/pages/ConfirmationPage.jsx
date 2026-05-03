@@ -17,22 +17,14 @@ export function ConfirmationPage() {
   const { showToast } = useToast()
   const { bookingDetails, error, loading, fetchBooking } = useBooking()
   const [previewOpen, setPreviewOpen] = useState(false)
-
+  
   // Effettua la fetch solo qui, in modo sicuro
   useEffect(() => {
     if (code) fetchBooking(code)
   }, [code])
 
-  const booking = location.state?.booking || (bookingDetails && bookingDetails.success ? bookingDetails.data : null)
+  
 
-  // Tutti gli hook sono chiamati prima di qualsiasi return condizionale
-  const emailPreview = useMemo(
-    () => ({
-      subject: `Conferma prenotazione ${booking.codice}`,
-      body: `Ciao ${booking.customer?.firstName},\n\nLa tua prenotazione presso ${booking.parking?.name} è confermata.\nCheck-in: ${formatDateRange(booking.period?.start, booking.period?.end)}\nTotale stimato: ${formatCurrency(booking.total)}\n\nMostra questo codice all'arrivo: ${booking.codice}.\n\nGrazie da Parkingo!`,
-    }),
-    [booking]
-  )
   // Gestione caricamento
   if (loading) {
     return (
@@ -53,8 +45,8 @@ export function ConfirmationPage() {
       </div>
     )
   }
-
   // Gestione caso: utente non ha permesso di visualizzare la prenotazione o dati non disponibili
+  const booking = bookingDetails
   if (!booking) {
     return (
       <div className="glass-panel rounded-3xl border border-white/10 p-10 text-center">
@@ -79,7 +71,10 @@ export function ConfirmationPage() {
     showToast({ type: 'success', title: 'Codice copiato' })
   }
 
-  
+  const emailPreview = {
+      subject: `Conferma prenotazione ${booking.codice}`,
+      body: `Ciao ${booking.customer?.firstName},\n\nLa tua prenotazione presso ${booking.parking?.name} è confermata.\nCheck-in: ${formatDateRange(booking.period?.start, booking.period?.end)}\nTotale stimato: ${formatCurrency(booking.total)}\n\nMostra questo codice all'arrivo: ${booking.codice}.\n\nGrazie da Parkingo!`,
+  }
 
   const handlePrint = () => {
     const receiptHtml = `<!doctype html>

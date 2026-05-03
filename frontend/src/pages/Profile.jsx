@@ -6,12 +6,13 @@ import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Modal } from '../components/ui/Modal'
 import { Card } from '../components/ui/Card'
+import { useLocation, useNavigate, useParams, Link } from 'react-router-dom'
 import { Car, Plus, Edit, Trash2, Calendar, MapPin, Clock } from 'lucide-react'
 
 export function ProfilePage() {
   const { user, logout } = useAuth()
   const { showToast } = useToast()
-
+  const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
   const [cars, setCars] = useState([])
   const [bookings, setBookings] = useState([])
@@ -277,11 +278,8 @@ export function ProfilePage() {
                   </div>
                   {canModifyBooking(booking) && (
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEditBooking(booking)}>
+                      <Button variant="outline" size="sm" onClick={() => navigate('/manage/' + booking.codice)}>
                         Modifica
-                      </Button>
-                      <Button variant="danger" size="sm" onClick={() => handleCancelBooking(booking.codice)}>
-                        Cancella
                       </Button>
                     </div>
                   )}

@@ -79,10 +79,9 @@ export function BookingProvider({ children }) {
         setBookingDetails(result);
         return null;
       }
-      
+      console.log('Fetched booking:', result); // Debug: verifica i dati ricevuti
       // 2. Update state for the current view
       setBookingDetails(result);
-
       return result;
     } catch (err) {
       setError(err.message);
