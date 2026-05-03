@@ -68,32 +68,29 @@ export function BookingProvider({ children }) {
    * @returns {Promise<Object|null>}
    */
   const fetchBooking = useCallback(async (code) => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     try {
-      const result = await getBooking(code)
+      // 1. Fetch with no-cache headers (if your getBooking allows options)
+      const result = await getBooking(code);
+
       if (!result || result.success === false) {
-        setError(result?.message || 'Prenotazione non trovata')
-        setBookingDetails(result)
-        return null
+        setError(result?.message || 'Prenotazione non trovata');
+        setBookingDetails(result);
+        return null;
       }
-      // result.success === true
-      setBookingDetails(result)
-      setBookings((prev) => {
-        const codice = result.data?.codice || code
-        const exists = prev.find((b) => b.codice === codice)
-        const next = exists ? prev.map((b) => (b.codice === codice ? result.data : b)) : [result.data, ...prev]
-        saveToStorage(next)
-        return next
-      })
-      return result
+      
+      // 2. Update state for the current view
+      setBookingDetails(result);
+
+      return result;
     } catch (err) {
-      setError(err.message)
-      return null
+      setError(err.message);
+      return null;
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   // ── Cancella prenotazione via API ─────────────────────────────────────────
   /**

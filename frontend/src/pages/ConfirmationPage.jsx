@@ -21,13 +21,18 @@ export function ConfirmationPage() {
   // Effettua la fetch solo qui, in modo sicuro
   useEffect(() => {
     if (code) fetchBooking(code)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code])
 
   const booking = location.state?.booking || (bookingDetails && bookingDetails.success ? bookingDetails.data : null)
 
   // Tutti gli hook sono chiamati prima di qualsiasi return condizionale
-
+  const emailPreview = useMemo(
+    () => ({
+      subject: `Conferma prenotazione ${booking.codice}`,
+      body: `Ciao ${booking.customer?.firstName},\n\nLa tua prenotazione presso ${booking.parking?.name} è confermata.\nCheck-in: ${formatDateRange(booking.period?.start, booking.period?.end)}\nTotale stimato: ${formatCurrency(booking.total)}\n\nMostra questo codice all'arrivo: ${booking.codice}.\n\nGrazie da Parkingo!`,
+    }),
+    [booking]
+  )
   // Gestione caricamento
   if (loading) {
     return (
@@ -74,13 +79,7 @@ export function ConfirmationPage() {
     showToast({ type: 'success', title: 'Codice copiato' })
   }
 
-  const emailPreview = useMemo(
-    () => ({
-      subject: `Conferma prenotazione ${code}`,
-      body: `Ciao ${booking.customer?.firstName},\n\nLa tua prenotazione presso ${booking.parking?.name} è confermata.\nCheck-in: ${formatDateRange(booking.period?.start, booking.period?.end)}\nTotale stimato: ${formatCurrency(booking.total)}\n\nMostra questo codice all'arrivo: ${code}.\n\nGrazie da Parkingo!`,
-    }),
-    [booking, code]
-  )
+  
 
   const handlePrint = () => {
     const receiptHtml = `<!doctype html>
