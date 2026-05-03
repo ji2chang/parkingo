@@ -28,7 +28,7 @@ export function AnalyticsPage() {
       .catch(() => {
         // Fallback: load from localStorage if API fails
         try {
-          const stored = JSON.parse(localStorage.getItem('parkly_bookings') || '[]')
+          const stored = JSON.parse(localStorage.getItem('parkingo_bookings') || '[]')
           setBookings(stored || [])
           
           // Calculate stats from stored bookings

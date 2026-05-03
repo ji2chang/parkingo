@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, useParams, Link } from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -15,14 +15,42 @@ export function ConfirmationPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { showToast } = useToast()
-  const { bookingDetails } = useBooking()
+  const { bookingDetails, error, loading, fetchBooking } = useBooking()
   const [previewOpen, setPreviewOpen] = useState(false)
-  const booking = location.state?.booking || bookingDetails
+  
+  // Effettua la fetch solo qui, in modo sicuro
+  useEffect(() => {
+    if (code) fetchBooking(code)
+  }, [code])
 
+  
+
+  // Gestione caricamento
+  if (loading) {
+    return (
+      <div className="glass-panel rounded-3xl border border-white/10 p-10 text-center">
+        <p className="text-xl font-semibold text-white/80">Caricamento in corso...</p>
+      </div>
+    )
+  }
+
+  // Gestione errore generico
+  if (error) {
+    return (
+      <div className="glass-panel rounded-3xl border border-white/10 p-10 text-center">
+        <p className="text-xl font-semibold text-red-400">{error}</p>
+        <Button className="mt-6" onClick={() => navigate('/search')}>
+          Torna alla ricerca
+        </Button>
+      </div>
+    )
+  }
+  // Gestione caso: utente non ha permesso di visualizzare la prenotazione o dati non disponibili
+  const booking = bookingDetails
   if (!booking) {
     return (
       <div className="glass-panel rounded-3xl border border-white/10 p-10 text-center">
-        <p className="text-xl font-semibold">Nessuna prenotazione trovata</p>
+        <p className="text-xl font-semibold text-red-400">Non hai il permesso di visualizzare questa prenotazione.</p>
         <Button className="mt-6" onClick={() => navigate('/search')}>
           Torna alla ricerca
         </Button>
@@ -30,18 +58,23 @@ export function ConfirmationPage() {
     )
   }
 
+  // Esempio di gestione errore cancellazione (da usare dove serve, es: in una funzione handleCancel)
+  // async function handleCancel() {
+  //   const ok = await removeBooking(code)
+  //   if (!ok) {
+  //     showToast({ type: 'danger', title: 'Errore', description: 'Impossibile cancellare la prenotazione.' })
+  //   }
+  // }
+
   const copyCode = async () => {
     await navigator.clipboard.writeText(code)
     showToast({ type: 'success', title: 'Codice copiato' })
   }
 
-  const emailPreview = useMemo(
-    () => ({
-      subject: `Conferma prenotazione ${code}`,
-      body: `Ciao ${booking.customer?.firstName},\n\nLa tua prenotazione presso ${booking.parking?.name} è confermata.\nCheck-in: ${formatDateRange(booking.period?.start, booking.period?.end)}\nTotale stimato: ${formatCurrency(booking.total)}\n\nMostra questo codice all'arrivo: ${code}.\n\nGrazie da Parkly!`,
-    }),
-    [booking, code]
-  )
+  const emailPreview = {
+      subject: `Conferma prenotazione ${booking.codice}`,
+      body: `Ciao ${booking.customer?.firstName},\n\nLa tua prenotazione presso ${booking.parking?.name} è confermata.\nCheck-in: ${formatDateRange(booking.period?.start, booking.period?.end)}\nTotale stimato: ${formatCurrency(booking.total)}\n\nMostra questo codice all'arrivo: ${booking.codice}.\n\nGrazie da Parkingo!`,
+  }
 
   const handlePrint = () => {
     const receiptHtml = `<!doctype html>

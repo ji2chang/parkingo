@@ -40,19 +40,23 @@ $app->get('/', function (Request $request, Response $response) {
     return $response->withStatus(404);
 });
 $jwt = new JWTMiddleware();
+global $jwt;
+$container = $app->getContainer();
+$container['jwt'] = function() {
+    return $jwt;
+};
 // 6. Define/Require your routes
 require __DIR__ . '/routesParcheggio.php';
 require __DIR__ . '/routesAnalytics.php';
 require __DIR__ . '/routesUtente.php';
 require __DIR__ . '/routesAuto.php';
 require __DIR__ . '/routesPrenotazione.php';
+require __DIR__ . '/routesAdmin.php';
 
 $protectedRoutes = ['/analytics', '/bookings'];
 
 foreach ($protectedRoutes as $route) {
-    $app->group($route, function ($group){}
-    
-    )->add($jwt);
+    $app->group($route, function ($group){})->add($jwt);
 }
 
 // 7. Error Middleware (Keep at the bottom)

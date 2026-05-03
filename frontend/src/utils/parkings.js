@@ -2,7 +2,7 @@
 export const PARKINGS = [
   {
     id: '1',
-    name: 'Parkly Centro',
+    name: 'Parkingo Centro',
     address: 'Via Roma 10',
     city: 'Milano',
     lat: 45.4641,
@@ -17,7 +17,7 @@ export const PARKINGS = [
   },
   {
     id: '2',
-    name: 'Parkly Stazione',
+    name: 'Parkingo Stazione',
     address: 'Piazza Duca d\'Aosta 1',
     city: 'Milano',
     lat: 45.4839,
@@ -32,7 +32,7 @@ export const PARKINGS = [
   },
   {
     id: '3',
-    name: 'Parkly Navigli',
+    name: 'Parkingo Navigli',
     address: 'Via Vigevano 14',
     city: 'Milano',
     lat: 45.4503,
@@ -47,7 +47,7 @@ export const PARKINGS = [
   },
   {
     id: '4',
-    name: 'Parkly Porta Venezia',
+    name: 'Parkingo Porta Venezia',
     address: 'Corso Buenos Aires 22',
     city: 'Milano',
     lat: 45.4773,
@@ -62,7 +62,7 @@ export const PARKINGS = [
   },
   {
     id: '5',
-    name: 'Parkly Duomo',
+    name: 'Parkingo Duomo',
     address: 'Via Torino 3',
     city: 'Milano',
     lat: 45.4654,

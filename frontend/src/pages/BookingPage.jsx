@@ -157,8 +157,11 @@ export function BookingPage() {
 
   const total = useMemo(() => {
     if (!parking) return 0
+    console.log(hours >= 24
+      ? Math.floor(hours / 24) * pricePerDay
+      : hours * pricePerHour);
     return hours >= 24
-      ? Math.ceil(hours / 24) * pricePerDay
+      ? Math.floor(hours / 24) * pricePerDay
       : hours * pricePerHour
   }, [hours, parking, pricePerHour, pricePerDay])
 

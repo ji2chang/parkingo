@@ -26,13 +26,27 @@ export default function App() {
             <Routes>
               <Route element={<MainLayout />}>
                 <Route index element={<HomePage />} />
-                <Route path="booking" element={<BookingStartPage />} />
-                <Route path="booking/:parkingId" element={<BookingPage />} />
+                <Route path="booking" element={
+                  <BookingStartPage />
+                } />
+                <Route path="booking/:parkingId" element={
+                  <ProtectedRoute>
+                    <BookingPage />
+                  </ProtectedRoute>
+                } />
                 <Route path="search" element={<SearchPage />} />
                 <Route path="map" element={<MapPage />} />
                 <Route path="signin" element={<SigninPage />} />
-                <Route path="confirmation/:code" element={<ConfirmationPage />} />
-                <Route path="manage/:code" element={<ManagePage />} />
+                <Route path="confirmation/:code" element={
+                  <ProtectedRoute>
+                    <ConfirmationPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="manage/:code" element={
+                  <ProtectedRoute>
+                    <ManagePage />
+                  </ProtectedRoute>
+                } />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="login" element={<LoginPage />} />
                 <Route
@@ -43,7 +57,9 @@ export default function App() {
                     </ProtectedRoute>
                   }
                 />
-                <Route path="admin" element={<AdminDashboard />} />
+                <Route path="admin" element={
+                    <AdminDashboard />
+                } />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Routes>

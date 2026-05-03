@@ -94,14 +94,14 @@ class ParcheggioRepository {
 
         // --- Filtri opzionali ---
         if (!empty($params['query'])) {
-            $sql .= " AND (p.nome LIKE :query_nome OR p.indirizzo LIKE :query_indirizzo)";
-            $binds[':query_nome'] = '%' . $params['query'] . '%';
-            $binds[':query_indirizzo'] = '%' . $params['query'] . '%';
+            $sql .= " AND (LOWER(p.nome) LIKE :query_nome OR LOWER(p.indirizzo) LIKE :query_indirizzo)";
+            $binds[':query_nome'] = '%' . strtolower($params['query']) . '%';
+            $binds[':query_indirizzo'] = '%' . strtolower($params['query']) . '%';
         }
 
         if (!empty($params['citta'])) {
-            $sql .= " AND p.citta = :citta";
-            $binds[':citta'] = $params['citta'];
+            $sql .= " AND LOWER(p.citta) LIKE :citta";
+            $binds[':citta'] = strtolower($params['citta']) . '%';
         }
 
         if (!empty($params['servizi'])) {
@@ -244,5 +244,14 @@ class ParcheggioRepository {
     {
         $stmt = $this->pdo->query('SELECT DISTINCT citta FROM parcheggi ORDER BY citta ASC');
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    public function cancellaParcheggio(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM parcheggi WHERE id = :id');
+        $stmt->execute([':id' => $id]);
+
+        // rowCount() restituisce il numero di righe eliminate
+        return $stmt->rowCount() > 0;
     }
 }

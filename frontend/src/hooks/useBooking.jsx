@@ -1,13 +1,12 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { createBooking, getBooking, cancelBooking as apiCancelBooking, updateBooking } from '../services/api'
-import { getParkingById } from '../services/api'
 import { emitBookingEvent, BOOKING_EVENTS } from './useBookingRefresh'
 
 const BookingContext = createContext(null)
 
 export function BookingProvider({ children }) {
-  const STORAGE_KEY = 'parkly_bookings'
+  const STORAGE_KEY = 'parkingo_bookings'
 
   const loadFromStorage = () => {
     try {
@@ -41,7 +40,7 @@ export function BookingProvider({ children }) {
     try {
       const result = await createBooking(body)
       
-      // 验证返回的数据包含有效的 codice
+      // ritorna il codice
       if (!result || (!result.codice_prenotazione && !result.codice)) {
         throw new Error('Errore: risposta del server non valida')
       }
@@ -69,40 +68,28 @@ export function BookingProvider({ children }) {
    * @returns {Promise<Object|null>}
    */
   const fetchBooking = useCallback(async (code) => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     try {
-      const result = await getBooking(code)
-      // Ensure booking contains parking details; if not, fetch them
-      if ((!result.parking && !result.parcheggio) && (result.parcheggio_id || result.parcheggioId || result.parking_id)) {
-        const pid = result.parcheggio_id ?? result.parcheggioId ?? result.parking_id
-        try {
-          const p = await getParkingById(pid)
-          if (p) {
-            // attach under both keys for compatibility
-            result.parking = p
-            result.parcheggio = p
-          }
-        } catch (e) {
-          // ignore parking fetch error
-        }
-      }
+      // 1. Fetch with no-cache headers (if your getBooking allows options)
+      const result = await getBooking(code);
 
-      setBookingDetails(result)
-      setBookings((prev) => {
-        const exists = prev.find((b) => b.codice === result.codice)
-        const next = exists ? prev.map((b) => (b.codice === result.codice ? result : b)) : [result, ...prev]
-        saveToStorage(next)
-        return next
-      })
-      return result
+      if (!result || result.success === false) {
+        setError(result?.message || 'Prenotazione non trovata');
+        setBookingDetails(result);
+        return null;
+      }
+      console.log('Fetched booking:', result); // Debug: verifica i dati ricevuti
+      // 2. Update state for the current view
+      setBookingDetails(result);
+      return result;
     } catch (err) {
-      setError(err.message)
-      return null
+      setError(err.message);
+      return null;
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   // ── Cancella prenotazione via API ─────────────────────────────────────────
   /**

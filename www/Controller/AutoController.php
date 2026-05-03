@@ -26,9 +26,25 @@ class AutoController
         return strtoupper(trim((string)$targa));
     }
 
+    private function checkAccess($utente, $targetUserId = null): void
+    {
+        if ($utente->ruolo === 'Admin') {
+            return;
+        }
+        if ($utente->ruolo === 'User' && ($targetUserId === null || $utente->id == $targetUserId)) {
+            return;
+        }
+        throw new \Exception('Accesso negato', 403);
+    }
+
     public function listAuto(Request $request, Response $response): Response
     {
         $utente = $request->getAttribute('utente');
+        try {
+            $this->checkAccess($utente, $utente->id);
+        } catch (\Exception $e) {
+            return $this->rispostaJson($response, ['errore' => $e->getMessage()], 403);
+        }
         $cars = $this->repository->getAutoByUser($utente->id);
         return $this->rispostaJson($response, ['cars' => $cars]);
     }
@@ -36,6 +52,11 @@ class AutoController
     public function createAuto(Request $request, Response $response): Response
     {
         $utente = $request->getAttribute('utente');
+        try {
+            $this->checkAccess($utente, $utente->id);
+        } catch (\Exception $e) {
+            return $this->rispostaJson($response, ['errore' => $e->getMessage()], 403);
+        }
         $dati = $request->getParsedBody();
 
         if (empty($dati['targa'])) {
@@ -61,6 +82,11 @@ class AutoController
     {
         $utente = $request->getAttribute('utente');
         $id = (int)$args['id'];
+        try {
+            $this->checkAccess($utente, $utente->id);
+        } catch (\Exception $e) {
+            return $this->rispostaJson($response, ['errore' => $e->getMessage()], 403);
+        }
         $dati = $request->getParsedBody();
 
         if (empty($dati['targa'])) {
@@ -90,6 +116,11 @@ class AutoController
     {
         $utente = $request->getAttribute('utente');
         $id = (int)$args['id'];
+        try {
+            $this->checkAccess($utente, $utente->id);
+        } catch (\Exception $e) {
+            return $this->rispostaJson($response, ['errore' => $e->getMessage()], 403);
+        }
 
         $auto = $this->repository->findById($id, $utente->id);
         if ($auto === null) {

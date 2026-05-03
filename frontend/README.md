@@ -127,3 +127,6 @@ In assenza di backend, il layer `src/utils/api.js` usa fallback/mock data per ma
 ## Deploy
 
 Esegui `npm run build` per generare `dist/` e pubblica su hosting statico (Vercel, Netlify, S3, ecc.).
+
+## To do
+- ui fix home (aggiunta card resize barra sotto)

@@ -57,8 +57,8 @@ html, body {
   color: #f1f5f9 !important;
   border-color: rgba(255,255,255,0.1) !important;
 }
-/* parkly-popup: custom dark popup */
-.parkly-popup .leaflet-popup-content-wrapper {
+/* parkingo-popup: custom dark popup */
+.parkingo-popup .leaflet-popup-content-wrapper {
   background: transparent !important;
   border: none !important;
   border-radius: 16px !important;
@@ -66,14 +66,14 @@ html, body {
   padding: 0 !important;
   overflow: hidden;
 }
-.parkly-popup .leaflet-popup-content {
+.parkingo-popup .leaflet-popup-content {
   margin: 0 !important;
   width: auto !important;
 }
-.parkly-popup .leaflet-popup-tip-container {
+.parkingo-popup .leaflet-popup-tip-container {
   display: none;
 }
-.parkly-popup .leaflet-popup-close-button {
+.parkingo-popup .leaflet-popup-close-button {
   color: #94a3b8 !important;
   font-size: 18px !important;
   right: 8px !important;

@@ -22,10 +22,31 @@ class PrenotazioneController
         $this->autoRepo = new AutoRepository();
     }
 
+    private static function checkAccess($utente, $targetUserId = null): void
+    {
+        if ($utente->ruolo === 'Admin') {
+            return;
+        }
+        if ($utente->ruolo === 'User' && ($targetUserId === null || $utente->id == $targetUserId)) {
+            return;
+        }
+        throw new \Exception('Accesso negato', 403);
+    }
+
     public function findByCodice(Request $request, Response $response, array $args): Response
     {
         $codice = $args['code'];
         $utente = $request->getAttribute('utente');
+        try {
+            $this->checkAccess($utente, $utente->id);
+        } catch (\Exception $e) {
+            $payload = json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+            $response->getBody()->write($payload);
+            return $response->withStatus(403)->withHeader('Content-Type', 'application/json');
+        }
         $prenotazione = $this->repository->getByCodiceAndUserId($codice, (int)$utente->id);
 
         if (empty($prenotazione)) {
@@ -52,12 +73,16 @@ class PrenotazioneController
             'codice' => $prenotazione->codice_prenotazione ?? $prenotazione['codice_prenotazione'] ?? null,
             'codice_prenotazione' => $prenotazione->codice_prenotazione ?? $prenotazione['codice_prenotazione'] ?? null,
             'id_auto' => $prenotazione->id_auto ?? $prenotazione['id_auto'] ?? null,
+            'targa' => $prenotazione->targa ?? $prenotazione['targa'] ?? null,
             'data_inizio' => $prenotazione->data_inizio ?? $prenotazione['data_inizio'] ?? null,
             'data_fine' => $prenotazione->data_fine ?? $prenotazione['data_fine'] ?? null,
             'period' => [
                 'start' => $prenotazione->data_inizio ?? $prenotazione['data_inizio'] ?? null,
                 'end' => $prenotazione->data_fine ?? $prenotazione['data_fine'] ?? null,
             ],
+            'nome' => $prenotazione->nome ?? $prenotazione['nome'] ?? null,
+            'cognome' => $prenotazione->cognome ?? $prenotazione['cognome'] ?? null,
+            'email' => $prenotazione->email ?? $prenotazione['email'] ?? null,
             'importo' => (float)($prenotazione->importo_totale ?? $prenotazione['importo_totale'] ?? 0),
             'total' => (float)($prenotazione->importo_totale ?? $prenotazione['importo_totale'] ?? 0),
             'parcheggio' => $par,
@@ -78,6 +103,16 @@ class PrenotazioneController
     public function listPrenotazioni(Request $request, Response $response): Response
     {
         $utente = $request->getAttribute('utente');
+        try {
+            $this->checkAccess($utente, $utente->id);
+        } catch (\Exception $e) {
+            $payload = json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+            $response->getBody()->write($payload);
+            return $response->withStatus(403)->withHeader('Content-Type', 'application/json');
+        }
         $prenotazioni = $this->repository->getByUserId((int)$utente->id);
 
         $data = array_map(function ($prenotazione) {
@@ -107,7 +142,16 @@ class PrenotazioneController
     {
         $rawData = $request->getParsedBody();
         $utente = $request->getAttribute('utente');
-
+        try {
+            $this->checkAccess($utente, $utente->id);
+        } catch (\Exception $e) {
+            $payload = json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+            $response->getBody()->write($payload);
+            return $response->withStatus(403)->withHeader('Content-Type', 'application/json');
+        }
         try {
             $requiredFields = ['parcheggio_id', 'data_inizio', 'orario_inizio', 'data_fine', 'orario_fine', 'id_auto'];
             $missingFields = [];
@@ -225,7 +269,16 @@ class PrenotazioneController
     {
         $codice = $args['code'];
         $utente = $request->getAttribute('utente');
-
+        try {
+            $this->checkAccess($utente, $utente->id);
+        } catch (\Exception $e) {
+            $payload = json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+            $response->getBody()->write($payload);
+            return $response->withStatus(403)->withHeader('Content-Type', 'application/json');
+        }
         try {
             $deleted = $this->repository->delete($codice, (int)$utente->id);
 
@@ -262,6 +315,16 @@ class PrenotazioneController
     {
         $codice = $args['code'];
         $utente = $request->getAttribute('utente');
+        try {
+            $this->checkAccess($utente, $utente->id);
+        } catch (\Exception $e) {
+            $payload = json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+            $response->getBody()->write($payload);
+            return $response->withStatus(403)->withHeader('Content-Type', 'application/json');
+        }
         $params = $request->getParsedBody() ?? [];
         $params['codice_prenotazione'] = $codice;
         $params['id_utente'] = (int)$utente->id;

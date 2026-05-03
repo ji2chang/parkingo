@@ -19,9 +19,10 @@ class PrenotazioneRepository {
      * Corretto l'ordine del JOIN e aggiunto l'alias per il nome del parcheggio.
      */
     public function getByCodice(string $codice) {
-        $sql = "SELECT p.*, pa.nome as nome_parcheggio 
+        $sql = "SELECT p.*, pa.nome as nome_parcheggio
                 FROM prenotazioni p 
-                JOIN parcheggi pa ON p.parcheggio_id = pa.id 
+                JOIN parcheggi pa ON p.parcheggio_id = pa.id
+                
                 WHERE p.codice_prenotazione = :codice";
 
         $stmt = $this->pdo->prepare($sql);
@@ -47,9 +48,11 @@ class PrenotazioneRepository {
     public function getByCodiceAndUserId(string $codice, int $userId)
     {
         $stmt = $this->pdo->prepare(
-            'SELECT p.*, pa.nome as nome_parcheggio
+            'SELECT p.*, pa.nome as nome_parcheggio, a.targa as targa, u.nome as nome, u.cognome as cognome, u.email as email
              FROM prenotazioni p
              JOIN parcheggi pa ON p.parcheggio_id = pa.id
+             join auto a on a.id = p.id_auto
+             join utenti u on u.id = p.id_utente
              WHERE p.codice_prenotazione = :codice
                AND p.id_utente = :id_utente'
         );
@@ -67,10 +70,9 @@ class PrenotazioneRepository {
         // 1. Genero il codice tramite stored procedure
         $stmt = $this->pdo->prepare("CALL genera_codice_prenotazione(@codice)");
         $stmt->execute();
-
         $result = $this->pdo->query("SELECT @codice AS codice")->fetch();
         $codice = $result['codice'];
-
+        
         // 2. Recupero la tariffa oraria del parcheggio
         $stmt = $this->pdo->prepare("SELECT tariffa_oraria FROM parcheggi WHERE id = :id");
         $stmt->execute(['id' => $data->parcheggio_id]);
@@ -84,7 +86,9 @@ class PrenotazioneRepository {
         $inizio = new DateTime($data->data_inizio);
         $fine   = new DateTime($data->data_fine);
         $diffOre = $inizio->diff($fine)->h + ($inizio->diff($fine)->days * 24);
-
+        if($diffOre >= 24){
+            $diffOre = ceil($diffOre / 24) * 24; // Arrotonda per eccesso a giorni interi
+        }
         // 4. Calcolo importo totale
         $importoTotale = $diffOre * $tariffa;
 
@@ -108,6 +112,7 @@ class PrenotazioneRepository {
             ':importo_totale' => $data->importo_totale,
             ':note' => $data->note ?? null,
         ];
+
         $ok = $this->pdo->prepare($sql)->execute($params);
         if (!$ok){
             throw new Exception("Inserimento della prenotazione non riuscito");

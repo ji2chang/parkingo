@@ -4,17 +4,24 @@ import * as api from '../services/api'
 export function AdminDashboard() {
   const [parkings, setParkings] = useState([])
   const [loading, setLoading] = useState(false)
-  const [form, setForm] = useState({ nome: '', citta: '', indirizzo: '', posti_totali: 10, lat: '', lng: '' })
+  const [form, setForm] = useState({ nome: '', citta: '', indirizzo: '', posti_totali: '', lat: '', lng: '' })
 
   useEffect(() => {
-    const u = JSON.parse(localStorage.getItem('user') || 'null')
-    if (!u || u.role !== 'admin') {
-      window.location.href = '/login'
-      return
-    }
-    load()
-  }, [])
+    const roleValidate = async () => {
+      const res = await api.getUserProfile();
 
+      const ruolo = res.ruolo;
+      
+      
+      if (ruolo !== "Admin") {
+        window.location.href = '/login'
+      }
+     load();
+
+    };
+    roleValidate();
+  }, []);
+  
   async function load() {
     setLoading(true)
     try {
@@ -26,23 +33,6 @@ export function AdminDashboard() {
       setParkings(stored)
     } finally {
       setLoading(false)
-    }
-  }
-
-  async function create() {
-    const payload = { ...form }
-    try {
-      const created = await api.createParking(payload)
-      setParkings((p) => [created, ...p])
-      setForm({ nome: '', citta: '', indirizzo: '', posti_totali: 10, lat: '', lng: '' })
-    } catch (err) {
-      // fallback: store locally
-      const stored = JSON.parse(localStorage.getItem('parkingo_admin_parkings') || '[]')
-      const id = Date.now()
-      const created = { id, ...payload }
-      stored.unshift(created)
-      localStorage.setItem('parkingo_admin_parkings', JSON.stringify(stored))
-      setParkings(stored)
     }
   }
 
@@ -66,21 +56,6 @@ export function AdminDashboard() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
           <div className="text-sm text-white/60">Gestione parcheggi</div>
-        </div>
-
-        <div className="glass-panel p-6 rounded-2xl">
-          <h2 className="font-semibold mb-3">Crea nuovo parcheggio</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <input placeholder="Nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className="p-2 rounded bg-white/5" />
-            <input placeholder="Città" value={form.citta} onChange={(e) => setForm({ ...form, citta: e.target.value })} className="p-2 rounded bg-white/5" />
-            <input placeholder="Indirizzo" value={form.indirizzo} onChange={(e) => setForm({ ...form, indirizzo: e.target.value })} className="p-2 rounded bg-white/5" />
-            <input placeholder="Posti totali" type="number" value={form.posti_totali} onChange={(e) => setForm({ ...form, posti_totali: Number(e.target.value || 0) })} className="p-2 rounded bg-white/5" />
-          </div>
-          <div className="mt-3 flex gap-3">
-            <input placeholder="Lat" value={form.lat} onChange={(e) => setForm({ ...form, lat: e.target.value })} className="p-2 rounded bg-white/5" />
-            <input placeholder="Lng" value={form.lng} onChange={(e) => setForm({ ...form, lng: e.target.value })} className="p-2 rounded bg-white/5" />
-            <button onClick={create} className="px-4 py-2 bg-teal-500 rounded text-gray-900 font-semibold">Crea</button>
-          </div>
         </div>
 
         <div className="glass-panel p-6 rounded-2xl">

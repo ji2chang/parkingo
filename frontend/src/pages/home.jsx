@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Search, MapPin, BarChart2, Zap } from 'lucide-react'
+import { Rocket } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 
@@ -11,6 +12,16 @@ const FEATURES = [
     description: 'Cerca e prenota il posto ideale per la tua auto, con un solo click.',
     action: '/booking',
     cta: 'Prenota',
+  },
+]
+
+const PROFILE = [
+  {
+    icon: <Rocket size={25} color="lightblue" />,
+    title: 'Accedi al tuo profilo',
+    description: 'Gestisci le tue prenotazioni in tranquillità con un solo click.',
+    action: '/profile',
+    cta: 'Visita',
   },
 ]
 
@@ -45,9 +56,8 @@ export function HomePage() {
           </Button>
         </div>
       </motion.section>
-
-      {/* Features */}
-      <section className="grid gap-6 md:grid-cols-3">
+      
+      <section className="grid gap-6 md:grid-cols-2">
         {FEATURES.map(({ icon, title, description, action, cta }, i) => (
           <motion.div
             key={title}
@@ -71,8 +81,31 @@ export function HomePage() {
             </Card>
           </motion.div>
         ))}
+        {PROFILE.map(({ icon, title, description, action, cta }, i) => (
+          <motion.div
+            key={title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 + i * 0.1 }}
+          >
+            <Card className="h-full" hoverable>
+              <div className="flex flex-col gap-4 h-full">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10">
+                  {icon}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-white">{title}</h3>
+                  <p className="mt-2 text-sm text-white/60">{description}</p>
+                </div>
+                <Button variant="ghost" onClick={() => navigate(action)} rightIcon={<Zap className="h-4 w-4" />}>
+                  {cta}
+                </Button>
+              </div>
+            </Card>
+          </motion.div>
+        ))}
       </section>
-
+      
       {/* Quick stats */}
       <motion.section
         className="glass-panel rounded-3xl border border-white/10 p-8"
