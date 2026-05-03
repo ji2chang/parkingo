@@ -19,9 +19,10 @@ class PrenotazioneRepository {
      * Corretto l'ordine del JOIN e aggiunto l'alias per il nome del parcheggio.
      */
     public function getByCodice(string $codice) {
-        $sql = "SELECT p.*, pa.nome as nome_parcheggio 
+        $sql = "SELECT p.*, pa.nome as nome_parcheggio
                 FROM prenotazioni p 
-                JOIN parcheggi pa ON p.parcheggio_id = pa.id 
+                JOIN parcheggi pa ON p.parcheggio_id = pa.id
+                
                 WHERE p.codice_prenotazione = :codice";
 
         $stmt = $this->pdo->prepare($sql);
@@ -47,9 +48,11 @@ class PrenotazioneRepository {
     public function getByCodiceAndUserId(string $codice, int $userId)
     {
         $stmt = $this->pdo->prepare(
-            'SELECT p.*, pa.nome as nome_parcheggio
+            'SELECT p.*, pa.nome as nome_parcheggio, a.targa as targa, u.nome as nome, u.cognome as cognome, u.email as email
              FROM prenotazioni p
              JOIN parcheggi pa ON p.parcheggio_id = pa.id
+             join auto a on a.id = p.id_auto
+             join utenti u on u.id = p.id_utente
              WHERE p.codice_prenotazione = :codice
                AND p.id_utente = :id_utente'
         );
