@@ -207,8 +207,7 @@ class ParcheggioController {
         $utente = $request->getAttribute('utente');
         try {
             $id = (int) $args['id'];
-            if(!UtenteController::checkAccess($utente))
-            $deleted = $this->repository->eliminaParcheggio($id);
+            $deleted = $this->repository->cancellaParcheggio($id);
             if (!$deleted) {
                 $payload = json_encode([
                     'success' => false,

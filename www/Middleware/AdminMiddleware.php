@@ -29,10 +29,10 @@ class AdminMiddleware implements MiddlewareInterface
 
         // Check if ruolo exists and is 'Admin'
         // Based on your structure: $utente['data']['ruolo']
-        if (!isset($utente['data']['ruolo']) || $utente['data']['ruolo'] !== 'Admin') {
+        if (!isset($utente->ruolo) || $utente->ruolo !== 'Admin') {
+            echo $utente->ruolo;
             return $this->rispostaErrore(401,'Utente non autorizzato');
         }
-        // echo 2;
 
         // User is admin, proceed to next middleware or route handler
         return $handler->handle($request);
