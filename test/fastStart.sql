@@ -133,6 +133,6 @@ INSERT INTO parcheggi_servizi (parcheggio_id, servizio_id) VALUES
 -- =====================================================
 -- Sostituisci la funzione di hash con quella usata nella tua app (es: SHA2, MD5, ecc.)
 -- Esempio con SHA2-256:
-INSERT INTO utenti (nome, cognome, nome_utente, email, password, ruolo) VALUES
+INSERT INTO utenti (nome, cognome, nome_utente, email, password_hash, ruolo) VALUES
 ('Mario', 'Rossi', "admin", 'admin@parkingo.it', "$2y$10$lqMR25blHDdHoUVVYxOJVemgjUxonN3OakVCC4.aW4TTrHdRnYZDm", 'Admin'),
 ('Luca', 'Bianchi', "user", 'user@parkingo.it', "$2y$10$ku4qg.2g5zJEZOSDOiG28Oo83mJaji0KaxYhN7uKJv1tXqHChoxTm", 'User');
