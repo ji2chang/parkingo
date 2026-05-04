@@ -80,6 +80,7 @@ class PrenotazioneController
                 'start' => $prenotazione->data_inizio ?? $prenotazione['data_inizio'] ?? null,
                 'end' => $prenotazione->data_fine ?? $prenotazione['data_fine'] ?? null,
             ],
+            'stato' => $prenotazione->stato ?? $prenotazione['stato'] ?? null,
             'nome' => $prenotazione->nome ?? $prenotazione['nome'] ?? null,
             'cognome' => $prenotazione->cognome ?? $prenotazione['cognome'] ?? null,
             'email' => $prenotazione->email ?? $prenotazione['email'] ?? null,

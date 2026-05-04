@@ -62,14 +62,14 @@ export function ManagePage() {
     )
   }
 
-  const isCancelled = booking.stato === 'cancellata' || booking.status === 'cancelled'
+  const isCancelled = booking.stato === 'annullata' || booking.status === 'cancelled'
 
   async function handleCancel() {
     const ok = await removeBooking(code)
     setCancelOpen(false)
     if (ok) {
-      showToast({ type: 'danger', title: 'Prenotazione cancellata', description: `Codice: ${code}` })
-      setBooking((prev) => ({ ...prev, stato: 'cancellata' }))
+      showToast({ type: 'danger', title: 'Prenotazione annullata', description: `Codice: ${code}` })
+      setBooking((prev) => ({ ...prev, stato: 'annullata' }))
     } else {
       showToast({ type: 'danger', title: 'Errore', description: 'Impossibile cancellare la prenotazione.' })
     }
