@@ -217,6 +217,12 @@ export function getUserProfile() {
  * @returns {Promise<Object>}
  */
 export function updateUserProfile(body) {
+  localStorage.setItem('user', JSON.stringify(body.nome))
+    window.dispatchEvent(new StorageEvent('storage', {
+    key: 'user',
+    newValue: JSON.stringify(body.nome)
+  }))
+  
   return client.patch('/api/user/profile', body)
 }
 

@@ -53,7 +53,10 @@ export function ProfilePage() {
   const handleUpdateProfile = async () => {
     try {
       await updateUserProfile({ nome: profile.nome, cognome: profile.cognome })
+      window.location.reload()
+
       showToast({ type: 'success', title: 'Successo', description: 'Profilo aggiornato' })
+      
     } catch (error) {
       showToast({ type: 'danger', title: 'Errore', description: 'Impossibile aggiornare il profilo' })
     }

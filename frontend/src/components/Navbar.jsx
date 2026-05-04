@@ -12,8 +12,13 @@ const LINKS = [
 export function Navbar() {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
-  const { isAuthenticated, logout, user } = useAuth()
-
+  const { isAuthenticated, logout } = useAuth()
+  const [user, setUser] = useState(() => {
+      if (typeof window !== 'undefined') {
+        return JSON.parse(localStorage.getItem('user') || 'null')
+      }
+      return null
+    })
   const handleLogout = () => {
     logout()
     navigate('/')
@@ -63,7 +68,7 @@ export function Navbar() {
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-gray-900 bg-teal-500 hover:bg-teal-400 transition"
               >
                 <User className="h-4 w-4" />
-                {user?.nome || user?.firstName || 'Profilo'}
+                {user || 'Profilo'}
               </button>
               <button
                 onClick={handleLogout}

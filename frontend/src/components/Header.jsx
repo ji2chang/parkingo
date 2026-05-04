@@ -17,16 +17,28 @@ export default function Header() {
   const [query, setQuery] = useState('')
   const [profileOpen, setProfileOpen] = useState(false)
   const profileRef = useRef(null)
+  const [user, setUser] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return JSON.parse(localStorage.getItem('user') || 'null')
+    }
+    return null
+  })
 
   useEffect(() => {
     const onDocClick = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false)
     }
+   const syncUser = () => {
+    const updated = JSON.parse(localStorage.getItem('user') || 'null')
+    setUser(updated)
+  }
+  window.addEventListener('storage', syncUser)
     document.addEventListener('click', onDocClick)
-    return () => document.removeEventListener('click', onDocClick)
+    return () => {
+      window.removeEventListener('storage', syncUser)
+      document.removeEventListener('click', onDocClick)
+    }
   }, [])
-
-  const user = typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || 'null')
 
   const navLinks = [
     { to: '/', label: 'Home' },
