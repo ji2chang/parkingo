@@ -74,10 +74,6 @@ class ParcheggioRepository {
             : "p.posti_totali AS posti_disponibili";
 
         $sql = "SELECT p.*,
-                    (SELECT GROUP_CONCAT(DISTINCT s.nome ORDER BY s.nome SEPARATOR ',')
-                            FROM parcheggi_servizi ps
-                            JOIN servizi s ON ps.servizio_id = s.id
-                            WHERE ps.parcheggio_id = p.id) AS servizi_disponibili,
                     {$availabilitySQL},
                     (p.tariffa_oraria * 24) AS tariffa_giornaliera
                 FROM parcheggi p
